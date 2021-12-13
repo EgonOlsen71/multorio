@@ -1,0 +1,79 @@
+A brief description of the "protocol" used by Multorio:
+
+Data packet
+
+A data packet always has the same structure. We do include a version and a game id. The latter isn't needed ATM, because it's
+implicitly encoded in the names (see below), but that might change.
+
+- Byte 1+2: Game-ID
+- Byte 3: Version
+- Byte 4: Type of data
+- Byte 5: Length
+- Byte 6-X: The actual data. What's in here depends on the type. The application has to take care of this.
+
+In this case:
+
+Game-ID: Fixed to 1
+Version: Fixed to 1 for now
+Types:  1 = random seed (one byte)
+        2 = Power/Angle (one byte each)
+        3 = Turn end / Restart (no playload)
+        4 = Exit game (no payload)
+
+
+Init phase 1 / Matchmaking
+
+Each player names himself and the opponent. A match is made if one player's name matches the other's opponent name and vice versa.
+To determine this, the each client creates two transmit-names, which are composed of the two names in alternating order
+plus a prefix to indicate the game iself.
+That way, it's less likely that a conflict on the server happens due to the same name being used.
+
+Example:
+
+Client 1:
+    Player: Horst
+    Opponent: Guenther
+
+Client 2:
+    Player: Guenther
+    Opponent: Horst
+
+The prefix in this case is "mul!" for Multorio
+
+The transmit names then are:
+
+Client 1:
+    Player: mul!Horst4Guenther
+    Opponent: mul!Guenther4Horst
+
+Client 2:
+    Player: mul!Guenther4Horst
+    Opponent: mul!Horst4Guenther
+
+That way, each client should be able to send messages to the other one but the risk of a conflict with another game hosted
+on the same server and/or the same name being used multiple times is being minimized as much as the current server
+solution allows for it.
+
+
+Init phase 2 / Seed exchange
+
+To avoid to implement a kind of client/server relation between the clients and to keep each client as simple as possible,
+we do a kind of "key exchange" between the two. Each client calculates a random number in the range of 0-999 and sends it to
+the other client. Then, each client will create a seed based on its own number and the one retrieved from the other client by
+using this algorithm:
+
+Given are 2 random numbers a and b
+
+Step 1: Determine the smaller number. If both are equal, just take one of them.
+Step 2: Multiply the smaller number by 1000 and add it to the larger number.
+Step 3: Calculate the result MOD 65536 (r=z-int(z/n)*n) <= That formula is simplified, but it works for whole numbers.
+Step 4: Initialize the random number generator with this new seed value.
+
+Example:
+
+Client 1 calculates number 456, Client 2 calculates 678. They both exchange these numbers.
+The smaller number is 456 => 456*1000 = 456000.
+Add the larger number to that: 456000+678 = 456678
+456678 MOD 65535 = 63462
+
+=> New seed = 63462
