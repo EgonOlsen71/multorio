@@ -75,7 +75,7 @@
 
 48000 rem init arrays and variables
 48010 dim ci%(3):ci%(0)=1:ci%(1)=15:ci%(2)=12:ci%(3)=11
-48020 dim pm(6),af%(1),pn$(1),ps(1),tn$(19),sb%(8)
+48020 dim pm%(6),af%(1),pn$(1),ps(1),tn$(19),sb%(8)
 48030 dim sc%(1,1):sc%(0,0)=126:sc%(1,0)=124
 48040 sc%(0,1)=123:sc%(1,1)=108
 48050 dim px(1),py(1),pa(1),pd(1),pc(1),pp(1),po$(1),po%(1),hp%(1)
@@ -106,8 +106,8 @@
 48645 poke 53276,0:poke 53287,1
 48650 poke 53285,2:poke 53286,10
 48660 restore:for i=16192 to 16192+191:read s:poke i,s:next:i=0
-48670 read pm:if pm=-1 then 48690
-48680 pm(i)=pm:i=i+1:goto 48670
+48670 read pm%:if pm%=-1 then 48690
+48680 pm%(i)=pm%:i=i+1:goto 48670
 48690 return
 
 49000 rem render landscape
@@ -123,15 +123,15 @@
 50030 sa=1024+x+y*40:se=sa+1:xe=x+1
 50035 if peek(sa)<>32 or peek(se)<>32 then 50020
 50037 yy=y:gosub 48500
-50040 for yp=y to 24:pa=peek(sa):pe=peek(se):cf=ci%(cc)
+50040 for yp=y to 24:pa=peek(sa):pe=peek(se):cf%=ci%(cc)
 50050 if pa<>160 and pa<>223 then poke sa,sc:goto 50055
 50052 poke sa,160
 50055 if pe<>160 and pe<>233 then poke se,ec:goto 50060
 50057 poke se,160
-50060 poke sa+54272,cf:poke se+54272,cf
+50060 poke sa+54272,cf%:poke se+54272,cf%
 50070 if se-sa=1 then 50100
 50080 for wp=sa+1 to se-1:poke wp,160
-50090 poke wp+54272,cf:next
+50090 poke wp+54272,cf%:next
 50100 x=x-1:if x>=0 then sa=sa-1:goto 50120
 50110 sc=160
 50120 xe=xe+1:if xe<=39 then se=se+1:goto 50140
@@ -257,7 +257,7 @@
 55052 pp(pn)=pp(pn)+1:if pp(pn)=101 then pp(pn)=10:gosub 55200
 55055 pp=pp(pn)/d
 55060 ph=int(pp/s):pl=pp-ph*s:if ph>s then 55090
-55070 poke 1105+po%(pn)+ph,pm(pl)
+55070 poke 1105+po%(pn)+ph,pm%(pl)
 55090 goto 55050
 
 55200 rem clear power meter
@@ -298,8 +298,8 @@
 58210 oc=160:return
 
 58250 rem place sprite
-58260 xx%=xx%+20:ov=-(xx%>255):poke 53249,yf+46:poke 53248,xx% and 255
-58270 return
+58260 xx%=xx%+20:ov=-(xx%>255):xx%=xx% and 255
+58270 poke 53249,yf+46:poke 53248,xx%:return
 
 58300 rem calculate position
 58310 po=1024+int(xf/8)+int(yf/8)*40:return
@@ -431,15 +431,15 @@
 62310 restore
 62320 read a:if a<>-1 then 62320
 62330 co=0:i=1024:gosub 62200
-62340 read p
-62350 if p=-999 then gosub 62220: poke 53280,1:return
-62360 if p<0 then gosub 62400:goto 62340
-62370 if p<16 then co = p:goto 62340 
-62380 p=p+16:poke i,p:poke 54272+i,co:poke 53280,p
+62340 read p%
+62350 if p%=-999 then gosub 62220: poke 53280,1:return
+62360 if p%<0 then gosub 62400:goto 62340
+62370 if p%<16 then co% = p%:goto 62340
+62380 p%=p%+16:poke i,p%:poke 54272+i,co%:poke 53280,co%
 62390 i=i+1:goto 62340
 
 62400 rem fill blanks
-62410 for j=i to i-p
+62410 for j=i to i-p%
 62420 poke j,160:poke 54272+j,0
 62430 next
 62440 i=j-1:return
