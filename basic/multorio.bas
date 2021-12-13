@@ -1,5 +1,5 @@
 10 poke 646,1:print chr$(147);:poke 53280,1:poke 53281,1
-15 print chr$(142);chr$(8);
+15 print chr$(142);chr$(8);:gosub 48600
 20 poke 650,192:poke 652,0:gosub 48000:gosub 39900:gosub 62500
 30 gosub 49000:gosub 51000:rs%=0:ob%=0
 40 pn=cp: gosub 54000:gosub 55000
@@ -10,11 +10,11 @@
 100 goto 40
 999 end
 
-39400 rem terrain hit
+39400 rem terrain hit sound
 39410 at=2:dc=2:el=4:rl=1:lq=180:hq=2
 39420 wf=128:pt=6:im=0:gosub 40000:return
 
-39500 rem game over
+39500 rem game over sound
 39510 at=7:dc=17:el=0:rl=0:lq=180:hq=9
 39520 wf=16:pt=20:im=0:gosub 40000
 39530 at=9:dc=13:el=0:rl=0:lq=180:hq=8
@@ -22,23 +22,23 @@
 39550 at=10:dc=11:el=0:rl=0:lq=180:hq=7
 39560 wf=16:pt=34:im=0:gosub 40000:return
 
-39600 rem whoop
+39600 rem whoop sound
 39610 at=9:dc=8:el=0:rl=0:lq=180:hq=5
 39620 wf=16:pt=30:im=0:gosub 40000:return
 
-39650 rem fire
+39650 rem fire sound
 39660 at=1:dc=8:el=0:rl=0:lq=180:hq=5
 39670 wf=128:pt=30:im=0:gosub 40000:return
 
-39750 rem player hit
+39750 rem player hit sound
 39760 at=1:dc=10:el=0:rl=0:lq=180:hq=8
 39770 wf=128:pt=30:im=0:gosub 40000:return
 
-39800 rem beep
+39800 rem beep sound
 39810 at=2:dc=3:el=8:rl=2:lq=180:hq=22
 39820 wf=16:pt=4:im=1:gosub 40000:return
 
-39850 rem moop
+39850 rem moop sound
 39860 at=4:dc=4:el=12:rl=3:lq=180:hq=12
 39870 wf=16:pt=8:im=0:gosub 40000:return
 
@@ -74,8 +74,8 @@
 42040 next:return
 
 48000 rem init arrays and variables
-48010 dim ci(3):ci(0)=1:ci(1)=15:ci(2)=12:ci(3)=11
-48020 dim pm(6),af%(1),pn$(1),ps(1),tn$(19)
+48010 dim ci%(3):ci%(0)=1:ci%(1)=15:ci%(2)=12:ci%(3)=11
+48020 dim pm(6),af%(1),pn$(1),ps(1),tn$(19),sb%(8)
 48030 dim sc%(1,1):sc%(0,0)=126:sc%(1,0)=124
 48040 sc%(0,1)=123:sc%(1,1)=108
 48050 dim px(1),py(1),pa(1),pd(1),pc(1),pp(1),po$(1),po%(1),hp%(1)
@@ -83,11 +83,13 @@
 48070 dn$=chr$(17):hm$=chr$(19):cl$="           ":cx$=cl$+cl$+cl$
 48080 lf$=chr$(157):lf$=lf$+lf$:lf$=lf$+lf$
 48090 pc(0)=3:pc(1)=5
+48092 sb%(0)=253:sb%(1)=253:sb%(2)=254:sb%(3)=254:sb%(4)=255
+48093 sb%(5)=255:sb%(6)=254:sb%(7)=254:sb%(8)=253
 48100 cg(3)=78:cg(4)=111:po$(0)="":po%(0)=0
 48110 for i=0 to 27:po$(1)=po$(1)+chr$(29):next
 48120 po%(1)=28:pi=3.141592:cp=0:rp=0
-48130 af%(0)=0:af%(1)=1
-48140 pn$(0)=" human ":pn$(1)=" computer "
+48130 af%(0)=0:af%(1)=0
+48140 pn$(0)=" human ":pn$(1)=" human "
 48150 return
 
 48500 rem get color
@@ -96,14 +98,23 @@
 48530 if yy>14 then cc=1:return
 48540 cc=0:return
 
+48600 rem init sprite
+48610 poke 56334,peek(56334) and 254:poke 1,peek(1) and 251
+48620 sp=704:for i=81*8+53248 to i+7: poke sp, peek(i):sp=sp+3:next
+48630 poke 1,peek(1) or 4:poke 56334,peek(56334) or 1
+48640 poke 2040,11:poke 53248,0:poke 53249,0:poke 53269,1
+48645 poke 53276,0:poke 53287,1
+48650 poke 53285,2:poke 53286,10
+48660 restore:for i=16192 to 16192+191:read s:poke i,s:next:i=0
+48670 read pm:if pm=-1 then 48690
+48680 pm(i)=pm:i=i+1:goto 48670
+48690 return
+
 49000 rem render landscape
 49020 gosub 39600:for i=0 to 4:gosub 50000:next
 49030 for i=1984 to 2023
-49040 poke i,160:poke i+54272,ci(3)
+49040 poke i,160:poke i+54272,ci%(3)
 49050 next i
-49060 mi=0:restore
-49070 read pm:if pm=-1 then 49100
-49080 pm(mi)=pm:mi=mi+1:goto 49070
 49100 return
 
 50000 rem render mountain
@@ -112,7 +123,7 @@
 50030 sa=1024+x+y*40:se=sa+1:xe=x+1
 50035 if peek(sa)<>32 or peek(se)<>32 then 50020
 50037 yy=y:gosub 48500
-50040 for yp=y to 24:pa=peek(sa):pe=peek(se):cf=ci(cc)
+50040 for yp=y to 24:pa=peek(sa):pe=peek(se):cf=ci%(cc)
 50050 if pa<>160 and pa<>223 then poke sa,sc:goto 50055
 50052 poke sa,160
 50055 if pe<>160 and pe<>233 then poke se,ec:goto 50060
@@ -120,7 +131,7 @@
 50060 poke sa+54272,cf:poke se+54272,cf
 50070 if se-sa=1 then 50100
 50080 for wp=sa+1 to se-1:poke wp,160
-50090 poke wp+54272,cf:next wp
+50090 poke wp+54272,cf:next
 50100 x=x-1:if x>=0 then sa=sa-1:goto 50120
 50110 sc=160
 50120 xe=xe+1:if xe<=39 then se=se+1:goto 50140
@@ -130,7 +141,7 @@
 50160 next yp:return
 
 51000 rem setup player
-51030 for i=0 to 1:pa(i)=pi/2:pd(i)=100:pp(i)=10
+51030 for i=0 to 1:pa(i)=90:pd(i)=100:pp(i)=10
 51040 px(i)=int(10*rnd(1))+1+i*27
 51050 hp%(i)=100
 51100 next i
@@ -145,7 +156,7 @@
 52060 for yp=y to 24
 52070 poke sa,160:poke sa+1,160
 52080 yy=yp:gosub 48500
-52100 poke sa+54272,ci(cc):poke sa+54272+1,ci(cc)
+52100 poke sa+54272,ci%(cc):poke sa+54272+1,ci%(cc)
 52110 sa=sa+40
 52120 next yp
 
@@ -153,7 +164,7 @@
 53010 gosub 60100
 53020 poke sa,85:poke sa+1,73
 53030 poke sa+54272,pc(pn):poke sa+54273,pc(pn)
-53040 ai=int(pa(pn)/0.629):ad=-(ai>2)
+53040 ai=int(pa(pn)*0.027748):ad=-(ai>2)
 53050 poke sa-40,32:poke sa-39,32:poke sa-40+ad,cg(ai)
 53060 poke sa+ad+54232,pc(pn)
 53070 return
@@ -183,12 +194,12 @@
 54010 gosub 42000:get a$:if a$="" then gosub 53500:goto 54010
 54012 if a$=chr$(3) then run
 54015 if a$>="0" and a$<="9" then gosub 54500:goto 54040
-54020 if a$="a" then pa(pn)=pa(pn)-0.02:as$="":goto 54040
-54030 if a$="d" then pa(pn)=pa(pn)+0.02:as$="":goto 54040
+54020 if a$="a" then pa(pn)=pa(pn)-1:as$="":goto 54040
+54030 if a$="d" then pa(pn)=pa(pn)+1:as$="":goto 54040
 54032 if a$=" " or a$=chr$(13) then gosub 53750:return
 54035 if a$=chr$(20) then gosub 54700
 54040 if pa(pn)<0 then pa(pn)=0
-54050 if pa(pn)>pi then pa(pn)=pi
+54050 if pa(pn)>180 then pa(pn)=180
 54060 gosub 54300
 54080 if len(as$)>0 then print chr$(157);chr$(164);"  ":goto 54090
 54085 print chr$(157);"   "
@@ -212,8 +223,7 @@
 54280 next:return
 
 54300 rem print angle
-54305 ra = int(pa(pn)/pi*180+0.5)
-54310 print chr$(19);po$(pn);"angle:    ";lf$;ra;
+54310 print chr$(19);po$(pn);"angle:    ";lf$;pa(pn);
 54320 return
 
 54500 rem enter angle
@@ -232,7 +242,7 @@
 54810 aa=val(as$)
 54820 if aa<0 then aa=0:as$="0"
 54830 if aa>180 then aa=180:as$="180"
-54840 pa(pn)=(aa/180)*pi
+54840 pa(pn)=aa
 54850 return
 
 55000 rem select power
@@ -260,11 +270,12 @@
 
 56000 rem fire
 56010 gosub 54250:gosub 60000:oc=-1:oa=0
-56020 xf=px(pn)*8+8:yf=py(pn)*8-8
-56030 af=pa(pn):pf=pp(pn)
-56035 if af>=pi then af=pi-0.01
-56036 if af<=0 then af=0.01
-56040 dx=-cos(af)*(pf/20):dy=-sin(af)*(pf/20)
+56020 af=(pa(pn)/180)*pi:pf=pp(pn)
+56030 if af>=pi then af=pi-0.01
+56032 if af<=0 then af=0.01
+56034 cf=cos(af):sf=sin(af)
+56036 xf=px(pn)*8+8-16*cf:yf=py(pn)*8+8-8*sf
+56040 dx=-cf*(pf/20):dy=-sf*(pf/20)
 56045 gosub 39650
 56050 gosub 58000
 56060 if oc<>32 then if oc<>-1 then sp=po:gosub 59000:gosub 61000:return
@@ -275,36 +286,48 @@
 57010 return
 
 58000 rem plot bullet
-58010 gosub 58300
-58020 pa=po
-58030 xf=xf+dx:yf=yf+dy
-58040 gosub 58300
-58050 if po>2023 or xf>319 or xf<0 then 58200
-58060 if po>1023 then 58100
-58070 if oc<>-1 then poke pa,oc
-58080 oc=-1:gosub 59500:goto 58140
-58100 if oa<>0 then poke oa,32:oa=0
-58105 if pa=po then 58140
-58110 if oc<>-1 then poke pa,oc
-58120 oc=peek(po):i0=-((int(xf) and 7)>3):i1=-((int(yf) and 7)>3)
-58130 poke po,sc%(i0,i1)
+58030 xf=xf+dx:yf=yf+dy:gosub 58300
+58035 if xf>319 or xf<0 then 58200
+58040 if yf<0 then oc=-1:gosub 59500:goto 58140
+58050 gosub 58350
+58100 xx%=xf:gosub 58250
+58110 poke 53264,ov
+58120 oc=peek(po)
 58140 return
-58200 if oc<>-1 then if pa<2024 then poke pa,oc
+58200 gosub 58400
 58210 oc=160:return
+
+58250 rem place sprite
+58260 xx%=xx%+20:ov=-(xx%>255):poke 53249,yf+46:poke 53248,xx% and 255
+58270 return
 
 58300 rem calculate position
 58310 po=1024+int(xf/8)+int(yf/8)*40:return
 
+58350 rem delete arrow
+58360 if oa<>0 then poke oa,32:oa=0
+58370 return
+
+58400 rem "disable" sprite
+58410 poke 53248,0:poke 53264,0:return
+
+58430 rem disable explosion
+58435 gosub 58400:poke 53287,1:poke 53276,0
+58540 poke 2040,11:return
+
+58560 rem enable explosion
+58570 xx%=xf-8:gosub 58250:poke 53287,7:poke 53276,1:poke 2040,253
+58580 return
+
 59000 rem hit something
-59020 if oa<>0 then poke oa,32:oa=0
-59025 if xf>319 or xf<0 then gosub 59800:return
-59030 if po>1023 and po<2024 then poke po,32:goto 59040
-59035 return
+59020 gosub 58350
+59025 if xf>319 or xf<0 then gosub 58400:gosub 59800:return
+59030 gosub 58560:if po>1023 and po<2024 then poke po,32:goto 59040
+59035 gosub 58430:return
 59040 pa=1024+(int(xf/8)-1)+int((yf/8)-1)*40
-59042 px=pa+41:cx=peek(54272+px):poke 54272+px,7:poke px,102
-59045 gosub 39400
+59045 gosub 39400:cs%=0
 59050 for po=pa to pa+80 step 40:xi=int(xf/8)-1
-59060 for pj=po to po+2
+59060 for pj=po to po+2:poke 2040,sb%(cs%):cs%=cs%+1
 59070 if pj<1024 or pj>2023 then 59110
 59075 pv=32:if po=pa+40 or pj=po+1 then 59100 
 59080 pl=(pj-1024)/40:if pl=int(pl) or pj<>po then 59085
@@ -315,7 +338,7 @@
 59096 if po<>pa and pv=95 then pv=105+128
 59100 if xi>-1 and xi<40 then poke pj,pv
 59110 xi=xi+1:gosub 42000:next pj,po
-59120 poke 54272+px,cx:return
+59120 gosub 58430:return
 
 59200 rem check for hole
 59210 pa=pn:for pj=0 to 1
@@ -329,10 +352,10 @@
 59520 oa=pa:poke pa,30:pa=pa+1
 59530 if pa<1064 then poke pa,32
 59540 pa=pa-2:if pa>1023 then poke pa,32
-59550 return
+59550 gosub 58400:return
 
 59800 rem out of bounds
-59805 gosub 42000:gosub 39850
+59805 gosub 58400:gosub 42000:gosub 39850
 59810 ob%=1:return
 
 59900 rem player moves down
@@ -409,10 +432,10 @@
 62320 read a:if a<>-1 then 62320
 62330 co=0:i=1024:gosub 62200
 62340 read p
-62350 if p=-999 then gosub 62220: return
+62350 if p=-999 then gosub 62220: poke 53280,1:return
 62360 if p<0 then gosub 62400:goto 62340
 62370 if p<16 then co = p:goto 62340 
-62380 poke i,p+16:poke 54272+i,co
+62380 p=p+16:poke i,p:poke 54272+i,co:poke 53280,p
 62390 i=i+1:goto 62340
 
 62400 rem fill blanks
@@ -443,6 +466,20 @@
 62950 rem set cursor location
 62960 poke 781,yp:poke 782,xp: poke 783,peek(783) and 254:sys 65520
 62970 return
+
+62980 rem explosion
+62981 data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+62982 data 80,0,0,109,192,3,237,176,3,153,176,1,153,192,13,155
+62983 data 192,14,173,0,7,181,0,5,64,0,0,0,0,0,0,0
+62984 data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,135
+62986 data 0,0,0,0,5,64,0,6,64,0,22,80,0,30,208,21
+62987 data 90,212,91,121,244,121,233,180,106,154,100,89,190,100,29,214
+62988 data 164,15,157,48,7,165,80,5,106,64,0,103,64,0,109,64
+62989 data 0,117,0,0,84,0,0,16,0,0,0,0,0,0,0,135
+62990 data 0,0,0,5,85,64,5,231,69,7,166,109,2,170,169,17
+62991 data 158,217,93,189,185,122,169,164,106,187,100,93,219,100,29,183
+62992 data 180,2,175,176,106,186,180,106,122,85,118,118,153,118,106,157
+62993 data 122,102,173,95,21,93,21,17,153,20,1,164,0,1,84,135
 
 63000 data 32,101,117,97,246,234,160,-1
 63010 data 15,87,215,97,99,59,50,99,88,57,109,,16,15,80,,16,16
