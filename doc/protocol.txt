@@ -59,15 +59,17 @@ Init phase 2 / Seed exchange
 
 To avoid to implement a kind of client/server relation between the clients and to keep each client as simple as possible,
 we do a kind of "key exchange" between the two. Each client calculates a random number in the range of 0-999 and sends it to
-the other client. Then, each client will create a seed based on its own number and the one retrieved from the other client by
+the other client. If both numbers are equals, the clients will generate a new number each an repeat.
+Then, each client will create a seed based on its own number and the one retrieved from the other client by
 using this algorithm:
 
-Given are 2 random numbers a and b
+Step 0: Generate a random number, send it to the other client, receive its number
 
-Step 1: Determine the smaller number. If both are equal, just take one of them.
-Step 2: Multiply the smaller number by 1000 and add it to the larger number.
-Step 3: Calculate the result MOD 65536 (r=z-int(z/n)*n) <= That formula is simplified, but it works for whole numbers.
-Step 4: Initialize the random number generator with this new seed value.
+Step 1: Determine the smaller number. If both are equal, go back to Step 0.
+Step 2: The player with the smaller number begins the round.
+Step 3: Multiply the smaller number by 1000 and add it to the larger number.
+Step 4: Calculate the result MOD 65536 (r=z-int(z/n)*n) <= That formula is simplified, but it works for whole numbers.
+Step 5: Initialize the random number generator with this new seed value.
 
 Example:
 
@@ -77,3 +79,5 @@ Add the larger number to that: 456000+678 = 456678
 456678 MOD 65535 = 63462
 
 => New seed = 63462
+
+

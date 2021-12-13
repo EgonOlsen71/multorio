@@ -75,7 +75,7 @@
 
 48000 rem init arrays and variables
 48010 dim ci(3):ci(0)=1:ci(1)=15:ci(2)=12:ci(3)=11
-48020 dim pm(6),ai(1,4),af%(1),pn$(1),ps(1),tn$(19)
+48020 dim pm(6),af%(1),pn$(1),ps(1),tn$(19)
 48030 dim sc%(1,1):sc%(0,0)=126:sc%(1,0)=124
 48040 sc%(0,1)=123:sc%(1,1)=108
 48050 dim px(1),py(1),pa(1),pd(1),pc(1),pp(1),po$(1),po%(1),hp%(1)
@@ -133,7 +133,6 @@
 51030 for i=0 to 1:pa(i)=pi/2:pd(i)=100:pp(i)=10
 51040 px(i)=int(10*rnd(1))+1+i*27
 51050 hp%(i)=100
-51060 ai(i,0)=0:ai(i,1)=0:ai(i,3)=0
 51100 next i
 51160 pn=0:gosub 52000:pn=1:gosub 52000
 51190 return
@@ -271,34 +270,9 @@
 56060 if oc<>32 then if oc<>-1 then sp=po:gosub 59000:gosub 61000:return
 56070 dy=dy+0.02:goto 56050
 
-57000 rem ai moves
+57000 rem other client moves .. @todo
 57005 gosub 42000
-57008 get a$:if a$=chr$(3) then run
-57010 np=(pn+1) and 1:tx=px(np)+1:ty=py(np)
-57015 sx=px(pn):sy=px(pn):rn=rnd(1)
-57020 if ai(pn,0)=0 then gosub 57900:return
-57030 dx=ai(pn,2)-tx:dy=ai(pn,3)-ty
-57035 if dx=0 and dy>2 then dx=dy/1.5
-57040 if pn=1 then dx=-dx
-57050 if dx=0 and dy=0 then return
-57055 if peek(53266)<120-(2*abs(dx)) then 57075
-57060 ai(pn,0)=ai(pn,0)-dx/(1+rn)
-57072 goto 57100
-57075 aa=0.0174*(1+(2*(pn=1)))*(.5+rn/2)
-57080 if dx<0 then ai(pn,1)=ai(pn,1)+aa
-57090 if dx>0 then ai(pn,1)=ai(pn,1)-aa
-57100 if ai(pn,1)>=pi then ai(pn,1)=pi-0.01
-57105 if ai(pn,1)<=0 then ai(pn,1)=0.01
-57110 gosub 57930
-57120 if ai(pn,0)>100 then ai(pn,0)=0
-57130 if ai(pn,3)>1 and ai(np,3)=0 then ai(pn,0)=0:ai(np,3)=999
-57140 return
-
-57900 ai(pn,0)=30+rnd(1)*50
-57910 np=.2+rnd(1)*.2:if tx<sx then np=-np
-57920 ai(pn,1)=pi/2+np
-57930 pp(pn)=ai(pn,0):pa(pn)=ai(pn,1)
-57940 return
+57010 return
 
 58000 rem plot bullet
 58010 gosub 58300
@@ -322,7 +296,6 @@
 58310 po=1024+int(xf/8)+int(yf/8)*40:return
 
 59000 rem hit something
-59010 ai(pn,2)=xf/8:ai(pn,3)=yf/8
 59020 if oa<>0 then poke oa,32:oa=0
 59025 if xf>319 or xf<0 then gosub 59800:return
 59030 if po>1023 and po<2024 then poke po,32:goto 59040
@@ -360,7 +333,7 @@
 
 59800 rem out of bounds
 59805 gosub 42000:gosub 39850
-59810 ai(pn,0)=0:ob%=1:return
+59810 ob%=1:return
 
 59900 rem player moves down
 59910 sa=sa-120:poke sa,32:poke sa+1,32
@@ -389,40 +362,17 @@
 61020 for i=0 to 1:dx=abs(px(i)-px)+(px>px(i)):dy=abs(py(i)-py)
 61030 if dx>2 or dy>2 then 61200
 61040 dd=10*(2-dx)+10*(2-dy)
-61045 ai(i,3)=ai(i,3)+1:if dd<=0 then 61200
+61045 if dd<=0 then 61200
 61050 hp%(i)=hp%(i)-dd:if hp%(i)<0 then hp%(i)=0
-61055 if af%(pn)=1 and i<>pn then tn%=0:gosub 61750
-61057 if af%(i)=1 and i<>pn then tn%=1:gosub 61750
-61060 pa=pn:pn=i:gosub 39750:gosub 54150:gosub 61500
+61060 pa=pn:pn=i:gosub 39750:gosub 54150
 61070 for p=0 to dd*2:poke 53270,peek(53266) and 7 or 8:next p
 61080 poke 53270,8:gosub 54250:pn=pa
-61200 next i:gosub 61800:return
-
-61500 rem modify cannon on hit
-61505 if rnd(1)<0.5 then return
-61510 if ai(pn,0)>0 then ai(pn,0)=ai(pn,0)+(10-int(rnd(1)*20))
-61520 if ai(pn,0)<10 then ai(pn,0)=0
-61530 return
+61200 next i:return
 
 61600 rem show scores
 61610 a$=str$(ps(0))+" -"+str$(ps(1))
 61620 yp=4:ck=1:gosub 62900
 61630 return
-
-61700 rem read taunts
-61710 for i=0 to 19:read tn$(i):next
-61720 return
-
-61750 rem display taunt
-61755 if ti-ts<80 then return
-61760 yp=rnd(1)*10:if tn%=0 then a$=tn$(yp)
-61770 if tn%=1 then a$=tn$(yp+10)
-61780 yp=4:ck=1:gosub 62900
-61790 ts=ti:return
-
-61800 rem clear taunt
-61810 if ti-ts<80 then 61810
-61820 a$=cx$:yp=4:ck=1:gosub 62900:return
 
 62000 rem check death
 62010 pa=0:pd=1:for i=0 to 1:if hp%(i)<=0 then pa=pa+pd:gosub 62100
@@ -472,7 +422,7 @@
 62440 i=j-1:return
 
 62500 rem show title
-62510 gosub 62300:gosub 61700
+62510 gosub 62300
 62520 poke 646,6:xp=3:yp=3:gosub 62950
 62530 print "the battle of":xp=10:yp=4:gosub 62950
 62540 print "vittorio!"
@@ -482,26 +432,8 @@
 62570 gosub 42000:gosub 63700
 62580 gosub 62200:poke 646,1:print chr$(147);
 62590 poke 53280,6:poke 53281,6
-62595 poke 646,7:xp=10:yp=24:gosub 62950:print"press space to begin"
-62600 poke 646,1:xp=10:yp=0:gosub 62950:print "prepare for battle!"
-62610 xp=8:yp=7:gosub 62950:print "(f1) player 1"
-62620 xp=8:yp=15:gosub 62950:print "(f3) player 2"
-62630 poke 1286,78:poke 1366,77:poke 1606,78:poke 1686,77
-62640 xp=23:yp=5
-62650 for i=0 to 1:af=af%(i)
-62660 for j=0 to 1:pn$=pn$(j):gosub 62950
-62670 if j=af then print chr$(18);:goto 62690
-62680 print chr$(146);
-62690 print pn$:yp=yp+4
-62700 next j,i:print chr$(146);
-62800 gosub 62220:gosub 62250
-62810 if a$=chr$(133) then af%(0)=(af%(0)+1) and 1:gosub 39800
-62820 if a$=chr$(134) then af%(1)=(af%(1)+1) and 1:gosub 39800
-62830 if a$=" " or a$=chr$(13) then 62870
-62835 gosub 42000
-62840 goto 62640
 62850 ps(0)=0:ps(1)=0
-62870 print chr$(147);:return
+62870 print chr$(147);:gosub 62220:return
 
 62900 rem print text
 62910 xp=20-int(len(a$)/2):ii=peek(646):poke 646,ck
@@ -578,27 +510,6 @@
 63072 data ,16,16,16,16,12,191,144,,208,-1,12,208,144,144,,208
 63073 data -1,211,192,16,16,16,80,64,208,-1,170,12,144,-2,,208
 63074 data -8,11,144,-1,11,144,-2,-999
-
-63500 data "it sucks to be you!"
-63510 data "like taking candy from a baby!"
-63520 data "it's good to be the best!"
-63530 data "ouch, that had to hurt!"
-63540 data "fire in the hole!"
-63550 data "believe it, little boy!"
-63560 data "lol!"
-63570 data "your attempts are futile!"
-63580 data "who's the man?"
-63590 data "boom!"
-63600 data "you were just lucky!"
-63610 data "stop shooting me!"
-63620 data "that didn't hurt!"
-63630 data "stop throwing things at me!"
-63640 data "i need some back-up!"
-63650 data "you are such a fool!"
-63660 data "where's my mother?"
-63670 data "bugger off!"
-63680 data "window licker!"
-63690 data "bloody hell!"
 
 63700 rem title song by jim vogel
 63705 rem > the c64 music book <
