@@ -1,8 +1,8 @@
 10 poke 646,1:print chr$(147);:poke 53280,1:poke 53281,1
 15 print chr$(142);chr$(8);:gosub 48600
 20 poke 650,192:poke 652,0:gosub 48000:gosub 39900:gosub 62500
-30 gosub 49000:gosub 51000:rs%=0:ob%=0
-40 pn=cp: gosub 54000:gosub 55000
+30 gosub 49000:gosub 51000:rs%=0:ob%=0:wi%=0
+40 pn=cp:gosub 53100:gosub 54000:gosub 55000
 60 gosub 56000:gosub 59200
 70 gosub 62000
 80 if rs%=1 then print chr$(147);:goto 30
@@ -75,7 +75,7 @@
 
 48000 rem init arrays and variables
 48010 dim ci%(3):ci%(0)=1:ci%(1)=15:ci%(2)=12:ci%(3)=11
-48020 dim pm%(6),af%(1),pn$(1),ps(1),tn$(19),sb%(8)
+48020 dim pm%(6),af%(1),pn$(1),ps(1),sb%(8)
 48030 dim sc%(1,1):sc%(0,0)=126:sc%(1,0)=124
 48040 sc%(0,1)=123:sc%(1,1)=108
 48050 dim px(1),py(1),pa(1),pd(1),pc(1),pp(1),po$(1),po%(1),hp%(1)
@@ -105,7 +105,7 @@
 48640 poke 2040,11:poke 53248,0:poke 53249,0:poke 53269,1
 48645 poke 53276,0:poke 53287,1
 48650 poke 53285,2:poke 53286,10
-48660 restore:for i=16192 to 16192+191:read s:poke i,s:next:i=0
+48660 restore:for i=16192 to 16192+191:read s%:poke i,s%:next:i=0
 48670 read pm%:if pm%=-1 then 48690
 48680 pm%(i)=pm%:i=i+1:goto 48670
 48690 return
@@ -169,6 +169,25 @@
 53060 poke sa+ad+54232,pc(pn)
 53070 return
 
+53100 rem calculate wind
+53110 wr=rnd(1):if wr<0.499 then wr=-2:goto 53120
+53115 wr=2
+53120 wi%=wi%+int(rnd(1)*wr+0.5)
+53130 if wi%>4 then wi%=4
+53140 if wi%<-4 then wi%=-4
+53150 return
+
+53200 rem draw wind
+53210 p=1043
+53215 if wi%=0 then 53240
+53220 for i=p to i+wi% step sgn(wi%):poke i,64:next
+53230 poke i,62+2*(wi%<0)
+53240 poke p,81:return
+
+53300 rem clear wind
+53310 for i=1037 to 1049:poke i, 32:next
+53320 return
+
 53500 rem active player blinks
 53510 gosub 60100:sa=sa+54272
 53520 pc=pc(pn):poke sa+1,1:poke sa,1:
@@ -185,9 +204,11 @@
 53760 xp=10:yp=4:gosub 62950
 53770 poke 646,1:print cl$;cl$
 53780 xp=9:yp=5:gosub 62950:print cl$;cl$;" "
+53785 gosub 53300
 53790 return
 
 54000 rem player move
+54001 gosub 53200
 54002 gosub 39800:gosub 54200:if af%(pn)=1 then gosub 57000:return
 54004 gosub 53700:gosub 62280
 54005 as$="":goto 54040
@@ -275,7 +296,7 @@
 56032 if af<=0 then af=0.01
 56034 cf=cos(af):sf=sin(af)
 56036 xf=px(pn)*8+8-16*cf:yf=py(pn)*8+8-8*sf
-56040 dx=-cf*(pf/20):dy=-sf*(pf/20)
+56040 dx=-cf*(pf/20):dy=-sf*(pf/20):dx=dx+wi%/6
 56045 gosub 39650
 56050 gosub 58000
 56060 if oc<>32 then if oc<>-1 then sp=po:gosub 59000:gosub 61000:return
