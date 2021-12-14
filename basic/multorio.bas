@@ -346,7 +346,6 @@
 58040 if yf<0 then oc=-1:gosub 59500:goto 58140
 58050 gosub 58350
 58100 xx%=xf:gosub 58250
-58110 poke 53264,ov
 58120 oc=peek(po)
 58140 return
 58200 gosub 58400
@@ -354,7 +353,8 @@
 
 58250 rem place sprite
 58260 xx%=xx%+20:ov=-(xx%>255):xx%=xx% and 255
-58270 poke 53249,yf+46:poke 53248,xx%:return
+58270 poke 53249,yf+46:poke 53248,xx%
+58280 poke 53264,ov:return
 
 58300 rem calculate position
 58310 po=1024+int(xf/8)+int(yf/8)*40:return
@@ -389,8 +389,9 @@
 59082 if peek(pj-1)<>32 and peek(pj-40-80*(po<>pa))<>32 then pv=105
 59085 pl=(pj-1023)/40:if pl=int(pl) or pj=po then 59095
 59090 if peek(pj+1)<>32 and peek(pj-40-80*(po<>pa))<>32 then pv=95
-59095 if po<>pa and pv=105 then pv=95+128
-59096 if po<>pa and pv=95 then pv=105+128
+59095 if po=pa then 59100
+59096 if pv=105 then pv=95+128:goto 59100
+59098 if pv=95 then pv=105+128
 59100 if xi>-1 and xi<40 then poke pj,pv
 59110 xi=xi+1:gosub 42000:next pj,po
 59120 gosub 58430:return
