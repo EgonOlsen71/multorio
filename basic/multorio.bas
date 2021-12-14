@@ -10,6 +10,37 @@
 100 goto 40
 999 end
 
+39000 rem enter string
+39010 st$="":a$=""
+39015 gosub 62950:gosub 39100
+39020 gosub 42000:geta$:if a$="" then 39020
+39030 if a$=chr$(13) and len(st$)>2 then print chr$(157);chr$(157);" ":return
+39040 if a$<>chr$(20) then 39080
+39050 if len(st$)>0 then st$=left$(st$, len(st$)-1):gosub 39880:goto 39015
+39080 if (a$<"0" or a$>"9") and (a$<"a" or a$>"z") and a$<>" " then 39020
+39090 if len(st$)>15 then gosub 39850:goto 39015
+39095 gosub 39880:st$=st$+a$:goto 39015
+
+39100 rem print temp string
+39110 poke 646,13:print st$;chr$(164);" ";:return
+
+39150 rem print error message
+39160 xp=8:yp=4:gosub 62950:poke 646,10
+39170 fl%=0:print "names have to be unique!":return
+
+39200 rem enter player names
+39202 fl%=0
+39205 print chr$(147);
+39210 xp=15:yp=2:gosub 62950:poke 646,7:print "game setup"
+39215 yp=6:if fl%=1 then gosub 39150:yp=8
+39220 xp=8:gosub 62950:poke 646,1:print "local player:"
+39225 gosub 62220
+39230 xp=21:gosub 39000:pn$(0)=st$:yp=yp+2
+39240 xp=8:gosub 62950:poke 646,1:print "remote player:"
+39250 xp=22:gosub 39000:pn$(1)=st$:fl%=0
+39260 if pn$(0)=pn$(1) then fl%=1:gosub 62200:gosub 39850:goto 39205
+39310 poke 646,1:print chr$(147);:return
+
 39400 rem terrain hit sound
 39410 at=2:dc=2:el=4:rl=1:lq=180:hq=2
 39420 wf=128:pt=6:im=0:gosub 40000:return
@@ -41,6 +72,10 @@
 39850 rem moop sound
 39860 at=4:dc=4:el=12:rl=3:lq=180:hq=12
 39870 wf=16:pt=8:im=0:gosub 40000:return
+
+39880 rem short beep sound
+39885 at=1:dc=1:el=4:rl=2:lq=180:hq=22
+39890 wf=16:pt=6:im=1:gosub 40000:return
 
 39900 rem init sounds
 39905 dim vt%(2),vl(2),vw%(2):vc=0:ac=0
@@ -89,7 +124,7 @@
 48110 for i=0 to 27:po$(1)=po$(1)+chr$(29):next
 48120 po%(1)=28:pi=3.141592:cp=0:rp=0
 48130 af%(0)=0:af%(1)=0
-48140 pn$(0)=" human ":pn$(1)=" human "
+48140 pn$(0)="":pn$(1)=""
 48150 return
 
 48500 rem get color
@@ -170,23 +205,22 @@
 53070 return
 
 53100 rem calculate wind
-53110 wr=rnd(1):if wr<0.499 then wr=-2:goto 53120
-53115 wr=2
-53120 wi%=wi%+int(rnd(1)*wr+0.5)
+53110 wr=rnd(1):if wr<0.499 then wr=-3:goto 53120
+53115 wr=3
+53120 wi%=wi%+int(rnd(1)*wr+0.499)
 53130 if wi%>4 then wi%=4
 53140 if wi%<-4 then wi%=-4
 53150 return
 
 53200 rem draw wind
-53210 p=1043
+53210 p=1043:for i=55309 to 55321:poke i,7:next
 53215 if wi%=0 then 53240
 53220 for i=p to i+wi% step sgn(wi%):poke i,64:next
 53230 poke i,62+2*(wi%<0)
 53240 poke p,81:return
 
 53300 rem clear wind
-53310 for i=1037 to 1049:poke i, 32:next
-53320 return
+53310 for i=1037 to 1049:poke i, 32:next:return
 
 53500 rem active player blinks
 53510 gosub 60100:sa=sa+54272
@@ -424,9 +458,9 @@
 62025 if pa=0 then return
 62028 gosub 39500
 62030 if pa>10 then a$="draw!!":yp=6:ck=10:gosub 62900
-62035 yp=6
-62040 if pa=1 then a$="player 2 wins!":ck=pc(1):ps(1)=ps(1)+1:gosub 62900
-62050 if pa=10 then a$="player 1 wins!":ck=pc(0):ps(0)=ps(0)+1:gosub 62900
+62035 yp=6:a$=" wins"
+62040 if pa=1 then a$=pn$(1)+a$:ck=pc(1):ps(1)=ps(1)+1:gosub 62900
+62050 if pa=10 then a$=pn$(0)+a$:ck=pc(0):ps(0)=ps(0)+1:gosub 62900
 62060 gosub 61600:gosub 62280:gosub 62250
 62070 rs%=1:rp=(rp+1) and 1:cp=rp:return
 
@@ -477,7 +511,8 @@
 62580 gosub 62200:poke 646,1:print chr$(147);
 62590 poke 53280,6:poke 53281,6
 62850 ps(0)=0:ps(1)=0
-62870 print chr$(147);:gosub 62220:return
+62880 gosub 39200
+62890 return
 
 62900 rem print text
 62910 xp=20-int(len(a$)/2):ii=peek(646):poke 646,ck
@@ -502,6 +537,7 @@
 62992 data 180,2,175,176,106,186,180,106,122,85,118,118,153,118,106,157
 62993 data 122,102,173,95,21,93,21,17,153,20,1,164,0,1,84,135
 
+62999 rem title screen
 63000 data 32,101,117,97,246,234,160,-1
 63010 data 15,87,215,97,99,59,50,99,88,57,109,,16,15,80,,16,16
 63011 data 16,15,80,238,208,170,208,95,29,42,80,42,42,80,,16,15,80
