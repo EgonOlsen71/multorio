@@ -5,11 +5,12 @@ Data packet
 A data packet always has the same structure. We do include a version and a game id. The latter isn't needed ATM, because it's
 implicitly encoded in the names (see below), but that might change.
 
-- Byte 1+2: Game-ID
+- Byte 1+2: Game-ID (low/high)
 - Byte 3: Version
 - Byte 4: Type of data
 - Byte 5: Length
-- Byte 6-X: The actual data. What's in here depends on the type. The application has to take care of this.
+- Byte 6: Counter / Round
+- Byte 7-X: The actual data. What's in here depends on the type. The application has to take care of this.
 
 In this case:
 
@@ -17,9 +18,10 @@ Game-ID: Fixed to 1
 Version: Fixed to 1 for now
 Types:  1 = random seed (one byte)
         2 = Power/Angle (one byte each)
-        3 = Turn end / Restart (no playload)
+        3 = Turn end / Restart (no payload)
         4 = Exit game (no payload)
-
+        5 = Message (one byte)
+        6 = Sync
 
 Init phase 1 / Matchmaking
 
@@ -79,5 +81,8 @@ Add the larger number to that: 456000+678 = 456678
 456678 MOD 65535 = 63462
 
 => New seed = 63462
+
+The client with the smaller number will also be the first mover. The left player always moves first. Depending on who
+moves first, one client might name to switch player names around.
 
 
