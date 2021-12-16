@@ -2,7 +2,7 @@
 10 poke 646,1:print chr$(147);:poke 53280,1:poke 53281,1
 15 print chr$(142);chr$(8);:gosub 48600
 20 poke 650,192:poke 652,0:gosub 48000:gosub 39900:gosub 62500
-30 gosub 49000:gosub 51000:rs%=0:ob%=0:wi%=0
+30 gosub 49000:gosub 51000:rs%=0:ob%=0:wi%=0:sf%=0
 40 rd%=rd%+1:pn=cp:gosub 53100:gosub 54000:gosub 55000
 60 gosub 56000:gosub 59200
 70 gosub 62000
@@ -17,9 +17,9 @@
 2030 return
 
 2050 rem init com settings
-2055 to%=32:bu=51200:ui=49152:lr%=-1:rd%=0
+2055 to%=64:bu=51200:ui=49152:lr%=-1:rd%=0
 2060 ur=49155:us=49152+18:ug=49152+21
-2070 uc=49152+24:ug$="mul!":tw%=60
+2070 uc=49152+24:ug$="mul!":tw%=60:ad$=""
 2080 gi%=1:gv%=1:dim di%(64)
 2090 gu$="http://t.wic64.net/dxc.php":return
 
@@ -33,11 +33,13 @@
 2150 return
 
 2160 rem wait for response until mx%=0
-2162 gosub 42000:ci%=peek(2023):i=53240:zz%=0
-2165 gosub 2200:print er%:if er%<>0 then zz%=zz%+1:goto 2170
+2161 ci%=peek(2023):zz%=-5
+2162 i=53240:ad$="":gosub 42000
+2165 gosub 2200:if er%<>0 then 2170
 2166 ok=peek(bu+200):df%=(rc%<>lr%) or rm%=0
-2168 if ok=0 and df% then poke 2023,ci%:gosub 3100:return
-2170 mx%=mx%-1:if mx%<=0 then 2260
+2168 if (ok=0 or ig%) and df% then poke 2023,ci%:gosub 3100:return
+2170 zz%=zz%+1:mx%=mx%-1:if mx%<=0 then 2260
+2172 if zz%>3 and rm%=1 and ty%=2 then poke 2023,19:gosub 3550:zz%=0
 2175 tw=ti
 2180 if ti-tw<tw% goto 2180
 2185 poke 2023,peek(i)
@@ -47,13 +49,16 @@
 2200 rem exchange data with wic64
 2201 if rm%=0 then gosub 2500
 2202 if rm%=1 then gosub 2600
+2203 ig%=ad$<>""
 2204 gosub 2800
 2205 poke 171,to%:sys us,bu
-2210 if peek(171)=0 then er%=2:return
+2210 if peek(171)=0 then 2245
 2220 poke 171,to%:sys ug,bu+200
-2225 if peek(171)=0 then er%=2:return
-2230 gosub 2650:if le% then er%=3:return
+2225 if peek(171)=0 then 2245
+2230 gosub 2650:if le% then 2240
 2235 rc%=peek(bu+206):er%=0:return
+2240 poke 2023,18:er%=3:ad$="&3=1":return
+2245 poke 2023,5:er%=2:return
 
 2250 rem wic64 error?
 2252 if peek(171)<>0 then return
@@ -82,7 +87,7 @@
 2510 le=len(da$):dl$=chr$(le and 255):dh$=chr$(int(le/256))
 2520 ur$=gu$+"?1=":us%=len(ur$)
 2530 ur$=ur$+"<$"+dl$+dh$+da$:ue%=len(ur$)
-2540 ur$=ur$+"&2="+to$
+2540 ur$=ur$+"&2="+to$+ad$
 2550 return
 
 2600 rem create receive url
@@ -129,12 +134,12 @@
 
 3200 rem version conflict, exit
 3210 gosub 2360
-3230 print "game type or version conflict!"
+3230 print "connection error or version conflict!"
 3240 sys ur:end
 
 3300 rem switch players
 3310 cp=0:af%(1)=1:af%(0)=0
-3320 if pp=0 then return
+3320 if me=0 then return
 3330 af%(1)=0:af%(0)=1
 3340 t$=pn$(0):pn$(0)=pn$(1):pn$(1)=t$
 3350 return
@@ -142,11 +147,29 @@
 3500 rem print remote message
 3510 return
 
+3550 rem retransmit last shot
+3555 if sf%=0 then return
+3560 pa=pn:pn=me:ms%=mx%:ry%=rd%:rd%=rz%
+3570 gosub 3650:rm%=0:gosub 2162:pn=pa:rm%=1:le%=0
+3580 mx%=ms%:rd%=ry%:return
+
 3600 rem transmit shot
 3605 gosub 60000:print chr$(19);"sending data..."
-3610 di%(0)=pp(pn):di%(1)=pa(pn)
-3620 ty%=2:le%=2:gosub 2700:mx%=10:gosub 2400
-3630 gosub 53330:return
+3610 gosub 3650:gosub 2400
+3630 rz%=rd%:return
+
+3650 rem prepare shot transmission
+3660 di%(0)=pp(pn):di%(1)=pa(pn):sf%=1
+3670 ty%=2:le%=2:gosub 2700:mx%=10:return
+
+3700 rem resync clients
+3705 print chr$(147);"get ready for next round...";
+3706 gosub 42000:if ti-tx<300 then 3706: rem force min. 5 sec delay...
+3710 lr%=-1:ty%=3:le%=0:gosub 2700
+3720 mx%=10:gosub 2400
+3730 mx%=100:gosub 2450:if ty%<>3 then 3730
+3740 return
+
 
 39000 rem enter string
 39010 st$="":a$=""
@@ -192,8 +215,8 @@
 39315 if ty%<>1 then gosub 39180:goto 39310
 39320 n2%=peek(bu+207)+256*peek(bu+208)
 39330 if n2%=nu% then print"invalid seed...retrying...":goto 39280
-39335 pp=1
-39340 if nu%<n2% then nt%=nu%:nu%=n2%:n2%=nt%:pp=0
+39335 me=1
+39340 if nu%<n2% then nt%=nu%:nu%=n2%:n2%=nt%:me=0
 39345 gosub 3300
 39350 sd=1000*n2%+nu%:sd=sd-int(sd/65535)*65535
 39360 print "game seed is"+sd:sd=rnd(-sd)
@@ -206,12 +229,11 @@
 39420 wf%=128:pt%=6:gosub 40000:return
 
 39500 rem game over sound
-39510 at%=7:dc%=17:el%=0:rl%=0:lq%=180:hq%=9
-39520 wf%=16:pt%=20:gosub 40000
-39530 at%=9:dc%=13:el%=0:rl%=0:lq%=180:hq%=8
-39540 wf%=16:pt%=25:gosub 40000
-39550 at%=10:dc%=11:el%=0:rl%=0:lq%=180:hq%=7
-39560 wf%=16:pt%=34:gosub 40000:return
+39510 at%=5:dc%=17:el%=4:rl%=4:lq%=180:hq%=15
+39520 wf%=16:pt%=40:gosub 40000
+39530 at%=10:dc%=13:el%=3:rl%=3:lq%=180:hq%=12
+39540 wf%=16:pt%=45:gosub 40000
+39550 return
 
 39600 rem whoop sound
 39610 at%=9:dc%=8:el%=0:rl%=0:lq%=180:hq%=5
@@ -468,7 +490,7 @@
 55030 print t$;chr$(98);"        ";chr$(98)
 55040 print t$;chr$(237);:gosub 55800:print chr$(253)
 55045 gosub 55200:d=1.7857:s=7
-55050 get a$:if a$=" " or a$=chr$(13) then gosub 3600:return
+55050 get a$:if a$=" " or a$=chr$(13) then gosub 3600:gosub 53330:return
 55052 pp(pn)=pp(pn)+1:if pp(pn)=101 then pp(pn)=10:gosub 55200
 55055 pp=pp(pn)/d
 55060 ph=int(pp/s):pl=pp-ph*s:if ph>s then 55090
@@ -542,18 +564,19 @@
 59000 rem hit something
 59020 gosub 58350
 59025 if xf>319 or xf<0 then gosub 58400:gosub 59800:return
-59030 gosub 58560:if po>1023 and po<2024 then poke po,32:goto 59040
+59030 gosub 58560:if po>1023 and po<2024 then 59040
 59035 gosub 58430:return
-59040 pa=1024+(int(xf/8)-1)+int((yf/8)-1)*40
+59040 gosub 58300:pa=po-41
 59045 gosub 39400:cs%=0
 59050 for po=pa to pa+80 step 40:xi=int(xf/8)-1
 59060 for pj=po to po+2:poke 2040,sb%(cs%):cs%=cs%+1
 59070 if pj<1024 or pj>2023 then 59110
-59075 pv=32:if po=pa+40 or pj=po+1 then 59100 
+59075 pv=32:if po=pa+40 or pj=po+1 then 59100
+59076 pk=peek(pj-40-80*(po<>pa))<>32
 59080 pl=(pj-1024)/40:if pl=int(pl) or pj<>po then 59085
-59082 if peek(pj-1)<>32 and peek(pj-40-80*(po<>pa))<>32 then pv=105
+59082 if peek(pj-1)<>32 and pk then pv=105
 59085 pl=(pj-1023)/40:if pl=int(pl) or pj=po then 59095
-59090 if peek(pj+1)<>32 and peek(pj-40-80*(po<>pa))<>32 then pv=95
+59090 if peek(pj+1)<>32 and pk then pv=95
 59095 if po=pa then 59100
 59096 if pv=105 then pv=95+128:goto 59100
 59098 if pv=95 then pv=105+128
@@ -590,11 +613,7 @@
 59980 return
 
 60000 rem clear controls
-60020 t$=po$(pn):print hm$;t$;cl$;
-60030 print hm$;dn$;t$;cl$;
-60040 print hm$;dn$;dn$;t$;cl$;
-60050 print hm$;dn$;dn$;dn$;t$;cl$;
-60060 return
+60020 for i=1024 to 1183:poke i,32:next:return
 
 60100 rem calculate screen pos
 60110 sa=1024+py(pn)*40+px(pn)+40:return
@@ -619,15 +638,14 @@
 61630 return
 
 62000 rem check death
-62010 pa=0:pd=1:for i=0 to 1:if hp%(i)<=0 then pa=pa+pd:gosub 62100
+62010 tx=ti:pa=0:pd=1:for i=0 to 1:if hp%(i)<=0 then pa=pa+pd:gosub 62100
 62020 pd=pd+9:next
 62025 if pa=0 then return
 62028 gosub 39500
-62030 if pa>10 then a$="draw!!":yp=6:ck=10:gosub 62900
-62035 yp=6:a$=" wins"
-62040 if pa=1 then a$=pn$(1)+a$:ck=pc(1):ps(1)=ps(1)+1:gosub 62900
-62050 if pa=10 then a$=pn$(0)+a$:ck=pc(0):ps(0)=ps(0)+1:gosub 62900
-62060 gosub 61600:gosub 62280:gosub 62250
+62030 yp=6:if pa>10 then a$="draw!!":ck=10:gosub 62900:goto 62060
+62035 a$=" wins":px=-(pa=1)
+62040 a$=pn$(px)+a$:ck=pc(px):ps(px)=ps(px)+1:gosub 62900
+62060 gosub 61600:gosub 62280:gosub 62250:gosub 3700
 62070 rs%=1:rp=(rp+1) and 1:cp=rp:return
 
 62100 rem draw damaged player

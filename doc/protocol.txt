@@ -6,7 +6,7 @@ A data packet always has the same structure. We do include a version and a game 
 implicitly encoded in the names (see below), but that might change.
 
 - Byte 1+2: Game-ID (low/high)
-- Byte 3: Version
+- Byte 3: Protocol version
 - Byte 4: Type of data
 - Byte 5: Length
 - Byte 6: Counter / Round
@@ -21,7 +21,7 @@ Types:  1 = random seed (one byte)
         3 = Turn end / Restart (no payload)
         4 = Exit game (no payload)
         5 = Message (one byte)
-        6 = Sync
+        6 = Sync (no payload)
 
 Init phase 1 / Matchmaking
 
