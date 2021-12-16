@@ -86,3 +86,49 @@ The client with the smaller number will also be the first mover. The left player
 moves first, one client might name to switch player names around.
 
 
+Dealing with connection/data loading problems
+
+There are several problems with loading a player's move from the server. In general, the WIC64 can report two kinds of issues:
+
+1. Timeout: This refers to the connection between the C64 and the WIC64. I've never seen this happen except when there
+is no WIC64 attached. If this happens, a resend is in order.
+2. Load error: This means, that the WIC64 actually tried to load the data, but for one reason or another, it wasn't succesful.
+
+We can ignore 1 for now, as it's rather simple to deal with. We will concentrate on 2. There are 4 possible cases:
+
+
+1. The sending fails. That means, that the request to send the data returns with a load error. In that case, we simply
+send the data again. It this fails for around 10 times in a row, we quit.
+
+2. The loading fails and the request never reaches the server. This is simple as well, we just try to load the data again.
+It this fails around 100 times, we quit.
+
+3. The loading fails, but the request actually reached the server. I can't explain this one, but it happens. If it happens,
+the data on the server has been flagged as used, but it never really reached the client. So we have to request it again, but
+in a forced way to ignore the fact, that the server thinks that we already have it. We can't distinguish 3 from 2, so we
+do this forced request either way.
+
+4. The sending fails silently. This is the worst problem, because we don't get an error on either client. But some reason,
+the data never makes it to the server, but the client thinks that is has. This will cause a deadlock situation, where the
+client that has last send the data waits for the other client to receive and process it and send it's response afterwards.
+However, the other client never got the data, so it's still waiting for it. So both are waiting on each other.
+We can't detect this case, but we can resend the last move after some time, just to be sure. If this reaches the other client,
+the deadlock will be resolved. We to this after an initial wait time of around 8 seconds and then every 3 seconds.
+
+
+However, 4 (and potentially 3) has a problem: The resending client doesn't know if the receiving client got the data or not.
+It doesn't know, if it had processed this move already and the player is just taking it's time or if it's a "missed move".
+To allow the receiving client to distinguish the two once he gets the data, we include a kind of round-ID in each packet and
+only accept the packet if this ID isn't equal to the last one we received. This "last round-ID" is only remembered while in
+normal game play. Data exchange before and after (for sending the seed or synchronizing the clients) doesn't process but still
+evaluates this. So we have to make sure that in these cases, some round-ID is being send that's always different from the last one...
+...like -1 for example.
+
+With all this in place, the game usually runs stable. There's one remaining issue: When a round ends, it might happen that one
+client is delayed because of 3 or 4 (most likely 4). In that case, it can happen the non-delayed client has already send the
+sync message to start a new round while the other one is still waiting for the data. We can't really deal with this. The round-ending
+screen adds an artifical delay of around 5 seconds to give some room to deal with this issue, but it's not guaranteed that
+this will be enough. There's nothing we can do to avoid this, I'm afraid.
+
+
+
