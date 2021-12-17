@@ -68,7 +68,7 @@
 2280 print "or the connection has timed out!"
 2290 print:print"press 'x' to exit or"
 2300 print "any other key to restart!"
-2305 gosub 58400:sys ur
+2305 gosub 58400:gosub 3900:sys ur
 2310 get a$:if a$="" then 2310
 2320 if a$="x" then end
 2330 run
@@ -112,11 +112,11 @@
 
 2800 rem store url in memory
 2810 dm%=0:for t=1 to len(ur$)
-2820 d$=mid$(ur$,t,1):dd=asc(d$)
+2820 d$=mid$(ur$,t,1):dd%=asc(d$)
 2830 if t>us% and t<=ue% then 2860
-2840 if dd>=65 and dd<=90 then dd=dd+32
-2850 if dd>=193 and dd<=218 then dd=dd-128
-2860 poke bu+3+t,dd
+2840 if dd%>=65 and dd%<=90 then dd%=dd%+32
+2850 if dd%>=193 and dd%<=218 then dd%=dd%-128
+2860 poke bu+3+t,dd%
 2870 next:gosub 2900:return
 
 2900 rem store length in memory
@@ -216,12 +216,13 @@
 39275 print chr$(147);:poke 646,1
 39280 nu%=rnd(0)*1000:di%(0)=nu% and 255:di%(1)=nu%/256
 39282 ty%=6:le%=0:gosub 2700
+39283 rem syncing is no longer an active process. It just "clears" the db once
 39284 print "synching clients...":mx%=10:gosub 2400
-39285 get a$:if a$=chr$(3) then run
-39286 mx%=100:gosub 2450:if ty%<>6 then 39286
 39290 ty%=1:le%=2:gosub 2700
 39300 print "exchange in progress...":mx%=10:gosub 2400
-39310 print "looking for ";pn$(1);"...":mx%=100:gosub 2450
+39310 print "looking for ";pn$(1);"..."
+39311 mx%=100:gosub 2450
+39312 if ty%=6 then print"where are you, ";pn$(1);"?":goto 39311
 39315 if ty%<>1 then gosub 39180:goto 39310
 39320 n2%=peek(bu+207)+256*peek(bu+208)
 39330 if n2%=nu% then print"invalid seed...retrying...":goto 39280
@@ -301,7 +302,7 @@
 48020 dim pm%(6),af%(1),pn$(1),ps(1),sb%(8)
 48030 dim sc%(1,1):sc%(0,0)=126:sc%(1,0)=124
 48040 sc%(0,1)=123:sc%(1,1)=108
-48050 dim px(1),py(1),pa(1),pd(1),pc(1),pp(1),po$(1),po%(1),hp%(1)
+48050 dim px(1),py(1),pa(1),pc(1),pp(1),po$(1),po%(1),hp%(1)
 48060 dim cg(4),bb%(2),bc%(2):cg(0)=111:cg(1)=77:cg(2)=103
 48070 dn$=chr$(17):hm$=chr$(19):cl$="           ":cx$=cl$+cl$+cl$
 48080 lf$=chr$(157):lf$=lf$+lf$:lf$=lf$+lf$
@@ -365,7 +366,7 @@
 50160 next yp:return
 
 51000 rem setup player
-51030 for i=0 to 1:pa(i)=90:pd(i)=100:pp(i)=10
+51030 for i=0 to 1:pa(i)=90:pp(i)=10
 51040 px(i)=int(10*rnd(1))+1+i*27
 51050 hp%(i)=100
 51100 next i
@@ -480,8 +481,8 @@
 54530 gosub 54800:return
 
 54700 rem clear char
-54705 if len(as$)=0 then return
-54710 as$=left$(as$,len(as$)-1)
+54705 la%=len(a$):if la%=0 then return
+54710 as$=left$(as$,la%-1)
 54720 if as$="" then as$="0"
 54730 gosub 54800:return
 
@@ -581,16 +582,16 @@
 59050 for po=pa to pa+80 step 40:xi=int(xf/8)-1
 59060 for pj=po to po+2:poke 2040,sb%(cs%):cs%=cs%+1
 59070 if pj<1024 or pj>2023 then 59110
-59075 pv=32:if po=pa+40 or pj=po+1 then 59100
+59075 pv%=32:if po=pa+40 or pj=po+1 then 59100
 59076 pk=peek(pj-40-80*(po<>pa))<>32
 59080 pl=(pj-1024)/40:if pl=int(pl) or pj<>po then 59085
-59082 if peek(pj-1)<>32 and pk then pv=105
+59082 if peek(pj-1)<>32 and pk then pv%=105
 59085 pl=(pj-1023)/40:if pl=int(pl) or pj=po then 59095
-59090 if peek(pj+1)<>32 and pk then pv=95
+59090 if peek(pj+1)<>32 and pk then pv%=95
 59095 if po=pa then 59100
-59096 if pv=105 then pv=95+128:goto 59100
-59098 if pv=95 then pv=105+128
-59100 if xi>-1 and xi<40 then poke pj,pv
+59096 if pv%=105 then pv%=95+128:goto 59100
+59098 if pv%=95 then pv%=105+128
+59100 if xi>-1 and xi<40 then poke pj,pv%
 59110 xi=xi+1:gosub 42000:next pj,po
 59120 gosub 58430:return
 
