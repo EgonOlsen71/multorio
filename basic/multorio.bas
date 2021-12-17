@@ -130,7 +130,7 @@
 3105 if rm%=0 then return
 3110 i=peek(bu+201)+256*peek(bu+202):if i<>gi% then 3200
 3120 i=peek(bu+203):if i<>gv% then 3200
-3130 ty%=peek(bu+204):return
+3130 ty%=peek(bu+204):gosub 3800:return
 
 3200 rem version conflict, exit
 3210 gosub 2360
@@ -170,6 +170,14 @@
 3730 mx%=100:gosub 2450:if ty%<>3 then 3730
 3740 return
 
+3800 rem check for end game type
+3810 if ty%<>4 then return
+3820 gosub 2360:print "the remote client has ended the game!"
+3830 gosub 62250:run
+
+3900 rem send end game packet
+3910 lr%=-1:ty%=4:le%=0:gosub 2700
+3920 mx%=10:gosub 2400:return
 
 39000 rem enter string
 39010 st$="":a$=""
@@ -189,8 +197,9 @@
 39160 xp=8:yp=4:gosub 62950:poke 646,10
 39170 fl%=0:print "names have to be unique!":return
 
-39180 rem print packet message (not atm)
-39185 return
+39180 rem print packet message, end game
+39185 gosub 2360:print "out of sync, press any key to restart!"
+39190 gosub 3900:gosub 62250:run
 
 39200 rem enter player names
 39202 fl%=0
@@ -208,6 +217,7 @@
 39280 nu%=rnd(0)*1000:di%(0)=nu% and 255:di%(1)=nu%/256
 39282 ty%=6:le%=0:gosub 2700
 39284 print "synching clients...":mx%=10:gosub 2400
+39285 get a$:if a$=chr$(3) then run
 39286 mx%=100:gosub 2450:if ty%<>6 then 39286
 39290 ty%=1:le%=2:gosub 2700
 39300 print "exchange in progress...":mx%=10:gosub 2400
@@ -221,7 +231,7 @@
 39350 sd=1000*n2%+nu%:sd=sd-int(sd/65535)*65535
 39360 print "game seed is"+sd:sd=rnd(-sd)
 39365 print pn$(cp);" moves first"
-39370 get a$:if a$="" then 39370
+39370 gosub 62250
 39380 print chr$(147);:return
 
 39400 rem terrain hit sound
@@ -429,7 +439,7 @@
 54004 gosub 53700:gosub 62280
 54005 as$="":goto 54040
 54010 gosub 42000:get a$:if a$="" then gosub 53500:goto 54010
-54012 if a$=chr$(3) then run
+54012 if a$=chr$(3) then gosub 3900:run
 54015 if a$>="0" and a$<="9" then gosub 54500:goto 54040
 54020 if a$="a" then pa(pn)=pa(pn)-1:as$="":goto 54040
 54030 if a$="d" then pa(pn)=pa(pn)+1:as$="":goto 54040
@@ -522,8 +532,8 @@
 57005 gosub 42000:gosub 53330
 57008 print chr$(19);pn$(pn);" moves..."
 57010 mx%=100:gosub 2450
-57020 if ty%=5 then gosub 3500:goto 57010
-57030 if ty%<>2 then gosub 39180:goto 57010
+57020 rem if ty%=5 then gosub 3500:goto 57010
+57030 if ty%<>2 then 39180
 57040 lr%=rc%:pa(pn)=peek(bu+208):pp(pn)=peek(bu+207)
 57050 gosub 53330:return
 
@@ -659,12 +669,12 @@
 62230 poke 53265,peek(53265) or 16:return
 
 62250 rem wait for input
+62255 poke 198,0
 62260 get a$:gosub 42000:if a$="" then 62260
 62270 return
 
 62280 rem wait for no input
-62285 get a$:gosub 42000:if a$<>"" then 62285
-62290 return
+62285 wait 198,255,255:return
 
 62400 rem fill blanks
 62410 for j=i to i-p%
