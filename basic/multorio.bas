@@ -1,4 +1,6 @@
-0  gosub 2050:gosub 2000:gosub 2100
+0 rem multorio - a two player game for the wic64
+1 rem (w) EgonOlsen71 / Dec. 2021
+5  gosub 2050:gosub 2000:gosub 2100
 10 poke 646,1:print chr$(147);:poke 53280,1:poke 53281,1
 15 print chr$(142);chr$(8);:gosub 48600
 20 poke 650,192:poke 652,0:gosub 48000:gosub 39900:gosub 62500
@@ -66,11 +68,8 @@
 2270 print "communication error!":print
 2275 print "either there's no wic64 present"
 2280 print "or the connection has timed out!"
-2290 print:print"press 'x' to exit or"
-2300 print "any other key to restart!"
 2305 gosub 58400:gosub 3900:sys ur
-2310 get a$:if a$="" then 2310
-2320 if a$="x" then end
+2310 gosub 62250
 2330 run
 
 2360 rem setup colors for error
@@ -161,9 +160,9 @@
 
 3600 rem transmit shot
 3605 gosub 60000:print chr$(19);"sending data..."
+3608 if ct%<>-1 then gosub 4000
 3610 gosub 3650:gosub 2400
 3630 rz%=rd%:
-3635 if ct%<>-1 then gosub 4000
 3640 return
 
 3650 rem prepare shot transmission
@@ -350,7 +349,7 @@
 48040 sc%(0,1)=123:sc%(1,1)=108
 48050 dim px(1),py(1),pa(1),pc(1),pp(1),po$(1),po%(1),hp%(1)
 48060 dim cg(4),bb%(2),bc%(2):cg(0)=111:cg(1)=77:cg(2)=103
-48070 dn$=chr$(17):hm$=chr$(19):cl$="           ":cx$=cl$+cl$+cl$
+48070 dn$=chr$(17):hm$=chr$(19)
 48080 lf$=chr$(157):lf$=lf$+lf$:lf$=lf$+lf$
 48090 pc(0)=3:pc(1)=5:ca$="":ct%=0
 48092 sb%(0)=253:sb%(1)=253:sb%(2)=254:sb%(3)=254:sb%(4)=255
@@ -386,7 +385,7 @@
 49020 gosub 39600:for i=0 to 4:gosub 50000:next
 49030 for i=1984 to 2023
 49040 poke i,160:poke i+54272,ci%(3)
-49050 next i
+49050 next
 49100 return
 
 50000 rem render mountain
@@ -410,13 +409,13 @@
 50130 ec=160
 50140 sa=sa+40:se=se+40
 50150 yy=yp+1:gosub 48500
-50160 next yp:return
+50160 next:return
 
 51000 rem setup player
 51030 for i=0 to 1:pa(i)=90:pp(i)=10
 51040 px(i)=int(10*rnd(1))+1+i*27
 51050 hp%(i)=100
-51100 next i
+51100 next
 51160 pn=0:gosub 52000:pn=1:gosub 52000
 51190 return
 
@@ -430,7 +429,7 @@
 52080 yy=yp:gosub 48500
 52100 poke sa+54272,ci%(cc):poke sa+54272+1,ci%(cc)
 52110 sa=sa+40
-52120 next yp
+52120 next
 
 53000 rem update player
 53010 gosub 60100
@@ -469,17 +468,13 @@
 53540 return
 
 53700 rem print help text
-53710 xp=10:yp=4:gosub 62950
-53720 poke 646,15:print "'a' and 'd' to adjust"
-53730 xp=9:yp=5:gosub 62950:print "or number keys to enter"
+53710 xp=7:yp=4:gosub 62950
+53720 poke 646,15:print "a+d to adjust, 0-9 to enter"
+53730 xp=11:yp=5:gosub 62950:print "f1 - f8 for taunts"
 53740 poke 646,1:return
 
 53750 rem clear help text
-53760 xp=10:yp=4:gosub 62950
-53770 poke 646,1:print cl$;cl$
-53780 xp=9:yp=5:gosub 62950:print cl$;cl$;" "
-53785 gosub 53300
-53790 return
+53760 for i=1184 to 1263:poke i,32:next:return
 
 54000 rem player move
 54001 gosub 53200
@@ -487,14 +482,14 @@
 54004 gosub 53700:gosub 62280
 54005 as$="":goto 54040:poke 198,0
 54010 gosub 42000:get a$:if a$="" then gosub 53500:goto 54010
-54012 if a$=chr$(3) then gosub 3900:run
-54015 if a$>="0" and a$<="9" then gosub 54500:goto 54040
-54020 if a$="a" then pa(pn)=pa(pn)-1:as$="":goto 54040
-54030 if a$="d" then pa(pn)=pa(pn)+1:as$="":goto 54040
-54032 if a$=" " or a$=chr$(13) then gosub 53750:return
-54035 if a$=chr$(20) then gosub 54700
-54038 i=asc(a$):if i>132 and i<141 then ct%=i-133:gosub 4400
-54039 if a$=chr$(95) then ct%=-1
+54012 ky%=asc(a$):if ky%=3 then gosub 3900:run
+54015 if ky%>47 and ky%<58 then gosub 54500:goto 54040
+54020 if ky%=65 then pa(pn)=pa(pn)-1:as$="":goto 54040
+54030 if ky%=68 then pa(pn)=pa(pn)+1:as$="":goto 54040
+54032 if ky%=32 or ky%=13 then gosub 53750:return
+54035 if ky%=20 then gosub 54700
+54038 if ky%>132 and ky%<141 then ct%=ky%-133:gosub 4400
+54039 if ky%=95 then ct%=-1
 54040 if pa(pn)<0 then pa(pn)=0
 54050 if pa(pn)>180 then pa(pn)=180
 54060 gosub 54300
@@ -530,7 +525,7 @@
 54530 gosub 54800:return
 
 54700 rem clear char
-54705 la%=len(a$):if la%=0 then return
+54705 la%=len(as$):if la%=0 then return
 54710 as$=left$(as$,la%-1)
 54720 if as$="" then as$="0"
 54730 gosub 54800:return
@@ -549,9 +544,10 @@
 55020 print t$;chr$(176);:gosub 55800:print chr$(174)
 55030 print t$;chr$(98);"        ";chr$(98)
 55040 print t$;chr$(237);:gosub 55800:print chr$(253)
-55045 gosub 55200:d=1.7857:s=7
-55050 get a$:if a$=" " or a$=chr$(13) then gosub 3600:gosub 53330:return
-55052 pp(pn)=pp(pn)+1:if pp(pn)=101 then pp(pn)=10:gosub 55200
+55045 gosub 55200:d=1.7857:s=7:poke 198,0
+55050 get a$:if a$="" then 55054
+55052 if a$=" " or a$=chr$(13) then gosub 3600:gosub 53330:return
+55054 pp(pn)=pp(pn)+1:if pp(pn)=101 then pp(pn)=10:gosub 55200
 55055 pp=pp(pn)/d
 55060 ph=int(pp/s):pl=pp-ph*s:if ph>s then 55090
 55070 poke 1105+po%(pn)+ph,pm%(pl)
@@ -562,7 +558,7 @@
 55220 poke i,32:next:pp(pn)=10:return
 
 55800 rem draw border
-55810 for i=0 to 7:print chr$(99);:next i
+55810 for i=0 to 7:print chr$(99);:next
 55820 return
 
 56000 rem fire
@@ -688,9 +684,9 @@
 61045 if dd<=0 then 61200
 61050 hp%(i)=hp%(i)-dd:if hp%(i)<0 then hp%(i)=0
 61060 pa=pn:pn=i:gosub 39750:gosub 54150
-61070 for p=0 to dd*2:poke 53270,peek(53266) and 7 or 8:next p
+61070 for p=0 to dd*2:poke 53270,peek(53266) and 7 or 8:next
 61080 poke 53270,8:gosub 54250:pn=pa
-61200 next i:return
+61200 next:return
 
 61600 rem show scores
 61610 a$=str$(ps(0))+" -"+str$(ps(1))

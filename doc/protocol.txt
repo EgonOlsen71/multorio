@@ -20,7 +20,7 @@ Types:  1 = random seed (one byte)
         2 = Power/Angle (one byte each)
         3 = Turn end / Restart (no payload)
         4 = Exit game (no payload)
-        5 = Message (one byte)
+        5 = Message (one byte); will be send via a kind of side-channel, see below
         6 = Sync (no payload)
 
 Init phase 1 / Matchmaking
@@ -55,6 +55,10 @@ Client 2:
 That way, each client should be able to send messages to the other one but the risk of a conflict with another game hosted
 on the same server and/or the same name being used multiple times is being minimized as much as the current server
 solution allows for it.
+
+For messages, this name is extended by adding a "!msg" to it. That way, messages won't conflict with the actual game data
+and exist on their own side-channel kind of thing. For these, the flow-control is much more relaxed. If sending or receiving such
+a messages fail, we actually don't care.
 
 
 Init phase 2 / Seed exchange
