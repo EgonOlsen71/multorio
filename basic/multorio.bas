@@ -487,9 +487,9 @@
 54001 gosub 53200
 54002 gosub 39800:gosub 54200:if af%(pn)=1 then gosub 57000:return
 54004 gosub 53700:gosub 62280
-54005 goto 54040:tw=0
+54005 goto 54040:tw=0:bc%=0
 54010 gosub 42000:gosub 4650:get a$:if a$="" then gosub 53500:goto 54010
-54012 ky%=asc(a$):if ky%=3 then gosub 3900:run
+54012 ky%=asc(a$):if ky%=3 then bc%=bc%+1:if bc%>1 then gosub 3900:run
 54015 if ky%>47 and ky%<58 then gosub 54500:goto 54040
 54020 if ky%=65 then pa(pn)=pa(pn)-1:as$="":goto 54040
 54030 if ky%=68 then pa(pn)=pa(pn)+1:as$="":goto 54040
