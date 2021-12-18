@@ -1,8 +1,7 @@
 0 rem multorio - a two player game for the wic64
 1 rem (w) EgonOlsen71 / Dec. 2021
-5  gosub 2050:gosub 2000:gosub 2100
-10 poke 646,1:print chr$(147);:poke 53280,1:poke 53281,1
-15 print chr$(142);chr$(8);:gosub 48600
+5 gosub 2360:print chr$(142);chr$(8);
+10 gosub 2050:gosub 2000:gosub 2100:gosub 48600
 20 poke 650,192:poke 652,0:gosub 48000:gosub 39900:gosub 62500
 30 gosub 49000:gosub 51000:rs%=0:ob%=0:wi%=0:sf%=0
 40 rd%=rd%+1:pn=cp:ct%=-1:gosub 53100:gosub 54000:gosub 55000
@@ -72,7 +71,7 @@
 2310 gosub 62250
 2330 run
 
-2360 rem setup colors for error
+2360 rem setup screen for system message
 2370 print chr$(147);:poke 53280,0:poke 53281,0:poke 646,1
 2380 return
 
@@ -213,20 +212,28 @@
 4350 return
 
 4400 rem choose taunt message
-4410 poke 646,13:b$=tn$(ct%):yp=3:xp=20-int(len(b$)/2)
+4410 gosub 4450:poke 646,13:b$=tn$(ct%):yp=3:xp=20-int(len(b$)/2)
 4420 gosub 62950:print b$
-4430 tw=40:gosub 4600
-4440 poke 646,1:for i=1144 to 1144+39:poke i,32:next:return
+4430 tw=70:tt=ti:return
+
+4450 rem clear taunt message
+4460 for i=1144 to 1144+39:poke i,32:next:return
 
 4600 rem wait for tw jiffies
 4610 tt=ti
 4620 gosub 42000:if ti-tt<tw then 4620
 4630 return
 
+4650 rem check for message timeout
+4660 if tw=0 then return
+4670 if ti-tt>tw then tw=0:gosub 4450
+4680 return
+
+
 39000 rem enter string
 39010 st$="":a$=""
 39015 gosub 62950:gosub 39100
-39020 gosub 42000:geta$:if a$="" then 39020
+39020 gosub 62250
 39030 if a$=chr$(13) and len(st$)>2 then print chr$(157);chr$(157);" ":return
 39040 if a$<>chr$(20) then 39080
 39050 if len(st$)>0 then st$=left$(st$, len(st$)-1):gosub 39880:goto 39015
@@ -474,14 +481,14 @@
 53740 poke 646,1:return
 
 53750 rem clear help text
-53760 for i=1184 to 1263:poke i,32:next:return
+53760 for i=1144 to 1263:poke i,32:next:return
 
 54000 rem player move
 54001 gosub 53200
 54002 gosub 39800:gosub 54200:if af%(pn)=1 then gosub 57000:return
 54004 gosub 53700:gosub 62280
-54005 as$="":goto 54040:poke 198,0
-54010 gosub 42000:get a$:if a$="" then gosub 53500:goto 54010
+54005 as$="":goto 54040:poke 198,0:tw=0
+54010 gosub 42000:gosub 4650:get a$:if a$="" then gosub 53500:goto 54010
 54012 ky%=asc(a$):if ky%=3 then gosub 3900:run
 54015 if ky%>47 and ky%<58 then gosub 54500:goto 54040
 54020 if ky%=65 then pa(pn)=pa(pn)-1:as$="":goto 54040
@@ -515,7 +522,7 @@
 54280 next:return
 
 54300 rem print angle
-54310 print chr$(19);po$(pn);"angle:    ";lf$;pa(pn);
+54310 poke 646,1:print chr$(19);po$(pn);"angle:    ";lf$;pa(pn);
 54320 return
 
 54500 rem enter angle
@@ -729,16 +736,14 @@
 62440 i=j-1:return
 
 62500 rem show title...well, not anymore...
-62510 print chr$(147);
-62590 poke 53280,6:poke 53281,6
-62850 ps(0)=0:ps(1)=0
-62880 gosub 39200
-62890 return
+62510 print chr$(147);:poke 53280,6:poke 53281,6
+62520 ps(0)=0:ps(1)=0
+62530 gosub 39200:return
 
 62900 rem print text
-62910 xp=20-int(len(a$)/2):ii=peek(646):poke 646,ck
+62910 xp=20-int(len(a$)/2):ii%=peek(646):poke 646,ck
 62920 gosub 62950
-62930 print a$:poke 646,ii:return
+62930 print a$:poke 646,ii%:return
 
 62950 rem set cursor location
 62960 poke 781,yp:poke 782,xp: poke 783,peek(783) and 254:sys 65520
