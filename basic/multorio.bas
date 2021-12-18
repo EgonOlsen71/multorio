@@ -470,7 +470,7 @@
 
 53500 rem active player blinks
 53510 gosub 60100:sa=sa+54272
-53520 pc=pc(pn):poke sa+1,1:poke sa,1:
+53520 pc=pc(pn):poke sa+1,1:poke sa,1
 53530 poke sa+1,pc:poke sa,pc
 53540 return
 
@@ -487,7 +487,7 @@
 54001 gosub 53200
 54002 gosub 39800:gosub 54200:if af%(pn)=1 then gosub 57000:return
 54004 gosub 53700:gosub 62280
-54005 as$="":goto 54040:poke 198,0:tw=0
+54005 goto 54040:tw=0
 54010 gosub 42000:gosub 4650:get a$:if a$="" then gosub 53500:goto 54010
 54012 ky%=asc(a$):if ky%=3 then gosub 3900:run
 54015 if ky%>47 and ky%<58 then gosub 54500:goto 54040
@@ -631,7 +631,7 @@
 59035 gosub 58430:return
 59040 gosub 58300:pa=po-41
 59045 gosub 39400:cs%=0
-59050 for po=pa to pa+80 step 40:xi=int(xf/8)-1
+59050 for po=pa to pa+80 step 40:xi%=xf/8-1
 59060 for pj=po to po+2:poke 2040,sb%(cs%):cs%=cs%+1
 59070 if pj<1024 or pj>2023 then 59110
 59075 pv%=32:if po=pa+40 or pj=po+1 then 59100
@@ -643,8 +643,8 @@
 59095 if po=pa then 59100
 59096 if pv%=105 then pv%=95+128:goto 59100
 59098 if pv%=95 then pv%=105+128
-59100 if xi>-1 and xi<40 then poke pj,pv%
-59110 xi=xi+1:gosub 42000:next pj,po
+59100 if xi%>-1 and xi%<40 then poke pj,pv%
+59110 xi%=xi%+1:gosub 42000:next pj,po
 59120 gosub 58430:return
 
 59200 rem check for hole
@@ -727,7 +727,9 @@
 62270 return
 
 62280 rem wait for no input
-62285 wait 198,255,255:return
+62285 poke 198,0
+62290 get a$:if a$<>"" then 62290
+62300 a$="":return
 
 62400 rem fill blanks
 62410 for j=i to i-p%
