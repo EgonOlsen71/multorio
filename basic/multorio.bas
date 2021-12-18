@@ -3,7 +3,7 @@
 15 print chr$(142);chr$(8);:gosub 48600
 20 poke 650,192:poke 652,0:gosub 48000:gosub 39900:gosub 62500
 30 gosub 49000:gosub 51000:rs%=0:ob%=0:wi%=0:sf%=0
-40 rd%=rd%+1:pn=cp:gosub 53100:gosub 54000:gosub 55000
+40 rd%=rd%+1:pn=cp:ct%=-1:gosub 53100:gosub 54000:gosub 55000
 60 gosub 56000:gosub 59200
 70 gosub 62000
 80 if rs%=1 then print chr$(147);:goto 30
@@ -49,7 +49,7 @@
 2200 rem exchange data with wic64
 2201 if rm%=0 then gosub 2500
 2202 if rm%=1 then gosub 2600
-2203 ig%=ad$<>""
+2203 ca$="":ig%=ad$<>""
 2204 gosub 2800
 2205 poke 171,to%:sys us,bu
 2210 if peek(171)=0 then 2245
@@ -84,14 +84,14 @@
 2460 rm%=1:gosub 2160:return
 
 2500 rem create send url
-2510 le=len(da$):dl$=chr$(le and 255):dh$=chr$(int(le/256))
+2510 le=len(da$):tb=le:gosub 3250:dl$=chr$(lb%):dh$=chr$(hb%)
 2520 ur$=gu$+"?1=":us%=len(ur$)
 2530 ur$=ur$+"<$"+dl$+dh$+da$:ue%=len(ur$)
-2540 ur$=ur$+"&2="+to$+ad$
+2540 ur$=ur$+"&2="+to$+ca$+ad$
 2550 return
 
 2600 rem create receive url
-2610 ur$=gu$+"?1=&2="+fr$:ue%=0:us%=0
+2610 ur$=gu$+"?1=&2="+fr$+ca$:ue%=0:us%=0
 2620 return
 
 2650 rem check load error (??)
@@ -101,12 +101,14 @@
 
 2700 rem create data (type in ty%, length in le%, data in di%[])
 2705 rem gameid+version (3 bytes)
-2710 da$=chr$(gi% and 255)+chr$(gi%/256)+chr$(gv%)
+2706 tb=gv%:gosub 3250
+2710 da$=chr$(lb%)+chr$(hb%)+chr$(gv%)
 2715 rem type (1 byte)
 2720 da$=da$+chr$(ty%)
-2725 rem length (1 byte)
+2725 rem length (1 byte) + round-id (1 byte)
 2730 da$=da$+chr$(le%)+chr$(rd% and 255)
 2735 if le%=0 then return
+2736 rem payload
 2740 for i=0 to le%-1:da$=da$+chr$(di%(i)):next
 2750 return
 
@@ -124,7 +126,8 @@
 2920 return
 
 3000 rem store s in d (lo/hi)
-3010 poke s,d and 255:poke s+1,int(d/256):return
+3005 tb=d:gosub 3250
+3010 poke s,lb%:poke s+1,hb%:return
 
 3100 rem check response for validity, stores type in ty%, round in rc%
 3105 if rm%=0 then return
@@ -136,6 +139,9 @@
 3210 gosub 2360
 3230 print "connection error or version conflict!"
 3240 sys ur:end
+
+3250 rem low/highbyte. Value in tb, result in lb% and hb%
+3260 lb%=tb and 255:hb%=int(tb/256):return
 
 3300 rem switch players
 3310 cp=0:af%(1)=1:af%(0)=0
@@ -156,7 +162,9 @@
 3600 rem transmit shot
 3605 gosub 60000:print chr$(19);"sending data..."
 3610 gosub 3650:gosub 2400
-3630 rz%=rd%:return
+3630 rz%=rd%:
+3635 if ct%<>-1 then gosub 4000
+3640 return
 
 3650 rem prepare shot transmission
 3660 di%(0)=pp(pn):di%(1)=pa(pn):sf%=1
@@ -164,7 +172,7 @@
 
 3700 rem resync clients
 3705 print chr$(147);"get ready for next round...";
-3706 gosub 42000:if ti-tx<300 then 3706: rem force min. 5 sec delay...
+3706 tw=300: gosub 4620: rem force min. 5 sec delay...
 3710 lr%=-1:ty%=3:le%=0:gosub 2700
 3720 mx%=10:gosub 2400
 3730 mx%=100:gosub 2450:if ty%<>3 then 3730
@@ -178,6 +186,43 @@
 3900 rem send end game packet
 3910 lr%=-1:ty%=4:le%=0:gosub 2700
 3920 mx%=10:gosub 2400:return
+
+4000 rem rem send taunt
+4010 di%(0)=ct%
+4020 ty%=5:le%=1:gosub 2700
+4030 ad$="":ca$="!msg":rm%=0:gosub 2200
+4040 ct%=-1:return
+
+4100 rem receive taunt
+4110 ad$="":ca$="!msg":rm%=1:gosub 2200
+4120 ok=(peek(bu+200)=0) and (er%=0)
+4130 if ok then gosub 3100: if ty%=5 then gosub 4200
+4140 return
+
+4200 rem display taunt msg
+4210 ct%=peek(bu+207):if ct%>7 then return
+4220 gosub 60000:a$=tn$(ct%):poke 646,1
+4250 le%=len(a$):po%=20-le%/2:vc%=1:yp=0:pp%=39
+4260 b$=left$(a$,vc%):xp=pp%:gosub 62950:print b$;" ";
+4270 pp%=pp%-1:vc%=vc%+1:if pp%>=po% then 4260
+4290 tw=80:gosub 4600
+4300 vc%=le%+po%
+4310 b$=right$(a$,vc%):if pp%<0 then pp%=0
+4320 xp=pp%:gosub 62950:print b$;" ";
+4330 pp%=pp%-1:vc%=vc%-1
+4340 if vc%>=0 then 4310
+4350 return
+
+4400 rem choose taunt message
+4410 poke 646,13:b$=tn$(ct%):yp=3:xp=20-int(len(b$)/2)
+4420 gosub 62950:print b$
+4430 tw=40:gosub 4600
+4440 poke 646,1:for i=1144 to 1144+39:poke i,32:next:return
+
+4600 rem wait for tw jiffies
+4610 tt=ti
+4620 gosub 42000:if ti-tt<tw then 4620
+4630 return
 
 39000 rem enter string
 39010 st$="":a$=""
@@ -204,7 +249,8 @@
 39200 rem enter player names
 39202 fl%=0
 39205 print chr$(147);
-39210 xp=15:yp=2:gosub 62950:poke 646,7:print "game setup"
+39210 xp=10:yp=2:gosub 62950:poke 646,7:print "multorio - game setup"
+39212 xp=23:yp=24:gosub 62950:print "egonolsen71/2021";
 39215 yp=6:if fl%=1 then gosub 39150:yp=8
 39220 xp=8:gosub 62950:poke 646,1:print "local player:"
 39225 gosub 62220
@@ -214,7 +260,7 @@
 39260 if pn$(0)=pn$(1) then fl%=1:gosub 62200:gosub 39850:goto 39205
 39270 to$=ug$+pn$(0)+"4"+pn$(1):fr$=ug$+pn$(1)+"4"+pn$(0)
 39275 print chr$(147);:poke 646,1
-39280 nu%=rnd(0)*1000:di%(0)=nu% and 255:di%(1)=nu%/256
+39280 nu%=rnd(0)*1000:tb=nu%:gosub 3250:di%(0)=lb%:di%(1)=hb%
 39282 ty%=6:le%=0:gosub 2700
 39283 rem syncing is no longer an active process. It just "clears" the db once
 39284 print "synching clients...":mx%=10:gosub 2400
@@ -231,8 +277,8 @@
 39345 gosub 3300
 39350 sd=1000*n2%+nu%:sd=sd-int(sd/65535)*65535
 39360 print "game seed is"+sd:sd=rnd(-sd)
-39365 print pn$(cp);" moves first"
-39370 gosub 62250
+39365 print pn$(cp);" moves first..."
+39370 ct%=255:gosub 4000: rem "clear" taunt message...
 39380 print chr$(147);:return
 
 39400 rem terrain hit sound
@@ -299,14 +345,14 @@
 
 48000 rem init arrays and variables
 48010 dim ci%(3):ci%(0)=1:ci%(1)=15:ci%(2)=12:ci%(3)=11
-48020 dim pm%(6),af%(1),pn$(1),ps(1),sb%(8)
+48020 dim pm%(6),af%(1),pn$(1),ps(1),sb%(8),tn$(7)
 48030 dim sc%(1,1):sc%(0,0)=126:sc%(1,0)=124
 48040 sc%(0,1)=123:sc%(1,1)=108
 48050 dim px(1),py(1),pa(1),pc(1),pp(1),po$(1),po%(1),hp%(1)
 48060 dim cg(4),bb%(2),bc%(2):cg(0)=111:cg(1)=77:cg(2)=103
 48070 dn$=chr$(17):hm$=chr$(19):cl$="           ":cx$=cl$+cl$+cl$
 48080 lf$=chr$(157):lf$=lf$+lf$:lf$=lf$+lf$
-48090 pc(0)=3:pc(1)=5
+48090 pc(0)=3:pc(1)=5:ca$="":ct%=0
 48092 sb%(0)=253:sb%(1)=253:sb%(2)=254:sb%(3)=254:sb%(4)=255
 48093 sb%(5)=255:sb%(6)=254:sb%(7)=254:sb%(8)=253
 48100 cg(3)=78:cg(4)=111:po$(0)="":po%(0)=0
@@ -333,7 +379,8 @@
 48670 read pm%:if pm%=-1 then 48690
 48680 pm%(i)=pm%:i=i+1:goto 48670
 48690 for i=0 to 7:read pm%:poke 53240+i,pm%:next
-48700 return
+48700 for i=0 to 7:read tn$(i):next
+48710 return
 
 49000 rem render landscape
 49020 gosub 39600:for i=0 to 4:gosub 50000:next
@@ -438,7 +485,7 @@
 54001 gosub 53200
 54002 gosub 39800:gosub 54200:if af%(pn)=1 then gosub 57000:return
 54004 gosub 53700:gosub 62280
-54005 as$="":goto 54040
+54005 as$="":goto 54040:poke 198,0
 54010 gosub 42000:get a$:if a$="" then gosub 53500:goto 54010
 54012 if a$=chr$(3) then gosub 3900:run
 54015 if a$>="0" and a$<="9" then gosub 54500:goto 54040
@@ -446,6 +493,8 @@
 54030 if a$="d" then pa(pn)=pa(pn)+1:as$="":goto 54040
 54032 if a$=" " or a$=chr$(13) then gosub 53750:return
 54035 if a$=chr$(20) then gosub 54700
+54038 i=asc(a$):if i>132 and i<141 then ct%=i-133:gosub 4400
+54039 if a$=chr$(95) then ct%=-1
 54040 if pa(pn)<0 then pa(pn)=0
 54050 if pa(pn)>180 then pa(pn)=180
 54060 gosub 54300
@@ -536,7 +585,7 @@
 57020 rem if ty%=5 then gosub 3500:goto 57010
 57030 if ty%<>2 then 39180
 57040 lr%=rc%:pa(pn)=peek(bu+208):pp(pn)=peek(bu+207)
-57050 gosub 53330:return
+57050 gosub 4100:gosub 53330:return
 
 58000 rem plot bullet
 58030 xf=xf+dx:yf=yf+dy:gosub 58300
@@ -649,7 +698,7 @@
 61630 return
 
 62000 rem check death
-62010 tx=ti:pa=0:pd=1:for i=0 to 1:if hp%(i)<=0 then pa=pa+pd:gosub 62100
+62010 tt=ti:pa=0:pd=1:for i=0 to 1:if hp%(i)<=0 then pa=pa+pd:gosub 62100
 62020 pd=pd+9:next
 62025 if pa=0 then return
 62028 gosub 39500
@@ -716,6 +765,17 @@
 63000 data 32,101,117,97,246,234,160,-1
 
 63010 data 47,64,77,66,78,64,77,66
+
+63499 rem taunts
+63500 data "hasta la vista, baby!"
+63510 data "it sucks to be you!"
+63540 data "fire in the hole!"
+63550 data "say 'hello' to my little friend!"
+63570 data "resistance is futile!"
+63590 data "to survive a war, you gotta become war!"
+63600 data "you can't hide, you can't run!"
+63610 data "hell is the impossibility of reason!"
+
 
 
 
