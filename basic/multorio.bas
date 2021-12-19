@@ -526,15 +526,16 @@
 54320 return
 
 54500 rem enter angle
-54510 if len(as$)>2 then return
-54515 if len(as$)>0 then if left$(as$,1)="0" then as$=""
+54505 la%=len(as$)
+54510 if la%>2 then return
+54515 if la%>0 then if left$(as$,1)="0" then as$=""
 54520 as$=as$+a$
 54530 gosub 54800:return
 
 54700 rem clear char
 54705 la%=len(as$):if la%=0 then return
 54710 as$=left$(as$,la%-1)
-54720 if as$="" then as$="0"
+54720 if la%=1 then as$="0"
 54730 gosub 54800:return
 
 54800 rem calculate angle
@@ -664,8 +665,6 @@
 59900 rem player moves down
 59910 sa=sa-120:poke sa,32:poke sa+1,32
 59920 poke sa+40,32:poke sa+41,32
-59923 poke sa+54272,1:poke sa+54273,1
-59924 poke sa+54312,1:poke sa+54313,1
 59930 gosub 60100:sa=sa+40
 59940 if peek(sa)<>32 or peek(sa+1)<>32 or sa>2023 then 59980
 59950 py(pn)=py(pn)+1:goto 59910
