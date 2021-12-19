@@ -13,7 +13,7 @@ It generates two output files (which can be found in the build directory as well
 
 In addition, it creates a d64-image containing the game and the machine language routines required to talk to the WiC64.
 
-##Game setup
+#Game setup
 
 Currently, there's no lobby or match making functionality. You have to know the name/id of your opponent (as well your own...). An example:
 
@@ -31,7 +31,7 @@ REMOTE PLAYER:HANS
 
 That's it, the clients should be able to find themselves, negotiate a common game setup and start a new game. Of course, this only works, if there's no other pairing with the same names. In that case, you (and them) will get faulty data. That's due to the way in which the server works and there's no way around it for now. If only one of the names is the same, that's fine. 
 
-## Game controls
+#Game controls
 
 The game is controlled via keyboard only. In the first part of your turn, you can select the cannon's angle by either using the A and D keys to de-/increase the angle or you can use the number keys to type in an angle directly. DEL will delete the last character of your input.
 Either way, pressing SPACE or RETURN will end this part of your turn. While you are here, you can choose between 8 different taunts as well by using the F1-F8 keys. The choosen taunt will be send to the other player once you've finished your turn. If you choose not to send a taunt, you can remove the current one by pressing the back arrow key in the upper left corner of the keyboard.
@@ -44,7 +44,6 @@ Once you've choosen the angle, you can now select the power of your shot on the 
 
 Keep in mind that there's also wind. The current wind's strength and direction will be shown in the center on top of the screen. The wind might change with each round.
 
-
-##License
+#License
 
 The game itself has been released under the Unlicense (see details in the license text file). However, this license doesn't apply to the WiC64 rountines in "universal.prg" as well as to the c1541.exe in the build-directory. For these parts, the corresponding licenses still apply.
