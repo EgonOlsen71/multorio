@@ -1,5 +1,5 @@
 # Multorio
-An multiplayer artillery duel clone for the Commodore 64/C64 in compiled BASIC.
+A multiplayer artillery duel clone for the Commodore 64/C64 in compiled BASIC.
 
 It requires a WiC64 to connect to the internet. If no WiC64 is present, the game won't run. More information about the WiC64 can be found here: https://www.wic64.de/
 
@@ -17,7 +17,7 @@ In addition, it creates a d64-image containing the game and the machine language
 
 Currently, there's no lobby or match making functionality. You have to know the name/id of your opponent (as well your own...). An example:
 
-Your choosen name is "hans", the other player's name is "wurst". You both start the game, your setup should look like this:
+Your chosen name is "hans", the other player's name is "wurst". You both start the game, your setup should look like this:
 
 LOCAL PLAYER:HANS
 
@@ -34,13 +34,13 @@ That's it, the clients should be able to find themselves, negotiate a common gam
 ## Game controls
 
 The game is controlled via keyboard only. In the first part of your turn, you can select the cannon's angle by either using the A and D keys to de-/increase the angle or you can use the number keys to type in an angle directly. DEL will delete the last character of your input.
-Either way, pressing SPACE or RETURN will end this part of your turn. While you are here, you can choose between 8 different taunts as well by using the F1-F8 keys. The choosen taunt will be send to the other player once you've finished your turn. If you choose not to send a taunt, you can remove the current one by pressing the back arrow key in the upper left corner of the keyboard.
+Either way, pressing SPACE or RETURN will end this part of your turn. While you are here, you can choose between 8 different taunts as well by using the F1-F8 keys. The chosen taunt will be send to the other player once you've finished your turn. If you choose not to send a taunt, you can remove the current one by pressing the back arrow key in the upper left corner of the keyboard.
 
-If you want to quit the game, you can do so at this stage by pressing the RUN/STOP key two times. The other player should then get a message that you did so and you both will be send back to the setup screen.
+If you want to quit the game, you can do so at this stage by pressing the RUN/STOP key two times. The other player should then get a message that you did so and you both will be sent back to the setup screen.
 
 Please note that the cannon's graphics only rougly reflect the actual angle, because they are rendered using PETSCII, which limits the options.
 
-Once you've choosen the angle, you can now select the power of your shot on the powermeter. Just press SPACE or RETURN at the right moment to choose.
+Once you've chosen the angle, you can now select the power of your shot on the powermeter. Just press SPACE or RETURN at the right moment to choose.
 
 Keep in mind that there's also wind. The current wind's strength and direction will be shown in the center on top of the screen. The wind might change with each round.
 
