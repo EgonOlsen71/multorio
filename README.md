@@ -44,6 +44,7 @@ Once you've choosen the angle, you can now select the power of your shot on the 
 
 Keep in mind that there's also wind. The current wind's strength and direction will be shown in the center on top of the screen. The wind might change with each round.
 
+
 ##License
 
 The game itself has been released under the Unlicense (see details in the license text file). However, this license doesn't apply to the WiC64 rountines in "universal.prg" as well as to the c1541.exe in the build-directory. For these parts, the corresponding licenses still apply.
