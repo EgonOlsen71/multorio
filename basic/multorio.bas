@@ -34,7 +34,7 @@
 2150 return
 
 2160 rem wait for response until mx%=0
-2161 ci%=peek(2023):zz%=-5
+2161 ci%=peek(2023):zz%=-5:poke bu+200,1: rem prefill with 'error'
 2162 i=53240:ad$="":gosub 42000
 2165 gosub 2200:if er%<>0 then 2170
 2166 ok=peek(bu+200):df%=(rc%<>lr%) or rm%=0
@@ -275,7 +275,7 @@
 39310 print "looking for ";pn$(1);"..."
 39311 mx%=100:gosub 2450
 39312 if ty%=6 then print"where are you, ";pn$(1);"?":goto 39311
-39315 if ty%<>1 then gosub 39180:goto 39310
+39315 if ty%<>1 then goto 39310
 39320 n2%=peek(bu+207)+256*peek(bu+208)
 39330 if n2%=nu% then print"invalid seed...retrying...":goto 39280
 39335 me=1
@@ -355,7 +355,7 @@
 48030 dim sc%(1,1):sc%(0,0)=126:sc%(1,0)=124
 48040 sc%(0,1)=123:sc%(1,1)=108
 48050 dim px(1),py(1),pa(1),pc(1),pp(1),po$(1),po%(1),hp%(1)
-48060 dim cg(4),bb%(2),bc%(2):cg(0)=111:cg(1)=77:cg(2)=103
+48060 dim cg(4):cg(0)=111:cg(1)=77:cg(2)=103
 48070 dn$=chr$(17):hm$=chr$(19)
 48080 lf$=chr$(157):lf$=lf$+lf$:lf$=lf$+lf$
 48090 pc(0)=3:pc(1)=5:ca$="":ct%=0
@@ -385,7 +385,7 @@
 48670 read pm%:if pm%=-1 then 48690
 48680 pm%(i)=pm%:i=i+1:goto 48670
 48690 for i=0 to 7:read pm%:poke 53240+i,pm%:next
-48700 for i=0 to 7:read tn$(i):next
+48700 sl$="":for i=0 to 7:read tn$(i):sl$=sl$+chr$(99):next
 48710 return
 
 49000 rem render landscape
@@ -512,13 +512,13 @@
 54200 rem show hit points
 54205 p$=str$(hp%(pn))+"  ":kc=7:ma=2
 54206 gosub 60100:sa=sa-120:for i=0 to 2
-54208 bb%(i)=peek(sa+i):bc%(i)=peek(sa+i+54272)
-54210 poke sa+i+54272,kc:poke sa+i,asc(mid$(p$,i+ma,1))
+54208 xp=sa+i:yp=xp+54272:poke 52500+i,peek(xp):poke 52505+i,peek(yp)
+54210 poke yp,kc:poke xp,asc(mid$(p$,i+ma,1))
 54220 next:return
 
 54250 rem hide hit points
 54260 gosub 60100:sa=sa-120:for i=0 to 2
-54270 poke sa+i+54272,bc%(i):poke sa+i,bb%(i)
+54270 xp=sa+i:poke xp+54272,peek(52505+i):poke xp,peek(52500+i)
 54280 next:return
 
 54300 rem print angle
@@ -548,9 +548,9 @@
 55002 if af%(pn)=1 then gosub 53000:return
 55005 gosub 62280:gosub 54300:print chr$(157);"  ";
 55010 print hm$;dn$;:t$=po$(pn)
-55020 print t$;chr$(176);:gosub 55800:print chr$(174)
+55020 print t$;chr$(176);sl$;chr$(174)
 55030 print t$;chr$(98);"        ";chr$(98)
-55040 print t$;chr$(237);:gosub 55800:print chr$(253)
+55040 print t$;chr$(237);sl$;chr$(253)
 55045 gosub 55200:d=1.7857:s=7:poke 198,0
 55050 get a$:if a$="" then 55054
 55052 if a$=" " or a$=chr$(13) then gosub 3600:gosub 53330:return
@@ -563,10 +563,6 @@
 55200 rem clear power meter
 55210 po%=po%(pn):for i=1105+po% to 1112+po%
 55220 poke i,32:next:pp(pn)=10:return
-
-55800 rem draw border
-55810 for i=0 to 7:print chr$(99);:next
-55820 return
 
 56000 rem fire
 56010 gosub 54250:gosub 60000:oc=-1:oa=0
