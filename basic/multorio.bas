@@ -22,7 +22,7 @@
 2060 ur=49155:us=49152+18:ug=49152+21
 2070 uc=49152+24:ug$="mul!":tw%=60:ad$=""
 2080 gi%=1:gv%=1:dim di%(64)
-2090 gu$="http://t.wic64.net/dxc.php":return
+2090 gu$="http://xxxxxxx/dxc.php":return
 
 2100 rem init wic64
 2105 print chr$(147);"initializing wic64...";
