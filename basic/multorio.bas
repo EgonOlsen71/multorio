@@ -148,9 +148,6 @@
 3340 t$=pn$(0):pn$(0)=pn$(1):pn$(1)=t$
 3350 return
 
-3500 rem print remote message
-3510 return
-
 3550 rem retransmit last shot
 3555 if sf%=0 then return
 3560 pa=pn:pn=me:ms%=mx%:ry%=rd%:rd%=rz%
@@ -582,7 +579,6 @@
 57005 gosub 42000:gosub 53330
 57008 print chr$(19);pn$(pn);" moves..."
 57010 mx%=100:gosub 2450
-57020 rem if ty%=5 then gosub 3500:goto 57010
 57030 if ty%<>2 then 39180
 57040 lr%=rc%:pa(pn)=peek(bu+208):pp(pn)=peek(bu+207)
 57050 gosub 4100:gosub 53330:return
