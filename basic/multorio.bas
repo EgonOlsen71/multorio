@@ -373,6 +373,7 @@
 
 48600 rem init sprite
 48610 poke 56334,peek(56334) and 254:poke 1,peek(1) and 251
+48615 for i=704 to 767:poke i,0:next
 48620 sp=704:for i=81*8+53248 to i+7: poke sp, peek(i):sp=sp+3:next
 48630 poke 1,peek(1) or 4:poke 56334,peek(56334) or 1
 48640 poke 2040,11:poke 53248,0:poke 53249,0:poke 53269,1

@@ -1,4 +1,4 @@
-call mospeed ..\basic\multorio.bas -memhole=16192-16383 -sysbuffer=52000
+call mospeed ..\basic\multorio.bas -memhole=16192-16383 -sysbuffer=52000 -generatesrc=true
 call mospeed ..\basic\loader.bas
 call moscrunch ++loader.prg -addfiles=..\res\title.img
 call moscrunch ++multorio.prg -addfiles=..\build\universal.prg
