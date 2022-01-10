@@ -16,7 +16,7 @@ In this case:
 
 Game-ID: Fixed to 1
 Version: Fixed to 1 for now
-Types:  1 = random seed (one byte)
+Types:  1 = random seed (two bytes)
         2 = Power/Angle (one byte each)
         3 = Turn end / Restart (no payload)
         4 = Exit game (no payload)
@@ -58,7 +58,7 @@ solution allows for it.
 
 For messages, this name is extended by adding a "!msg" to it. That way, messages won't conflict with the actual game data
 and exist on their own side-channel kind of thing. For these, the flow-control is much more relaxed. If sending or receiving such
-a messages fail, we actually don't care.
+a message fails, we actually don't care.
 
 
 Init phase 2 / Seed exchange
