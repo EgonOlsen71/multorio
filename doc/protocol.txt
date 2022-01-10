@@ -112,7 +112,7 @@ the data on the server has been flagged as used, but it never really reached the
 in a forced way to ignore the fact, that the server thinks that we already have it. We can't distinguish 3 from 2, so we
 do this forced request either way.
 
-4. The sending fails silently. This is the worst problem, because we don't get an error on either client. But some reason,
+4. The sending fails silently. This is the worst problem, because we don't get an error on either client. But for some reason,
 the data never makes it to the server, but the client thinks that is has. This will cause a deadlock situation, where the
 client that has last send the data waits for the other client to receive and process it and send it's response afterwards.
 However, the other client never got the data, so it's still waiting for it. So both are waiting on each other.
