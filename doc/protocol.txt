@@ -114,10 +114,10 @@ do this forced request either way.
 
 4. The sending fails silently. This is the worst problem, because we don't get an error on either client. But for some reason,
 the data never makes it to the server, but the client thinks that is has. This will cause a deadlock situation, where the
-client that has last send the data waits for the other client to receive and process it and send it's response afterwards.
+client that has last send the data waits for the other client to receive and process it and send its response afterwards.
 However, the other client never got the data, so it's still waiting for it. So both are waiting on each other.
 We can't detect this case, but we can resend the last move after some time, just to be sure. If this reaches the other client,
-the deadlock will be resolved. We to this after an initial wait time of around 8 seconds and then every 3 seconds.
+the deadlock will be resolved. We do this after an initial wait time of around 8 seconds and then every 3 seconds.
 
 
 However, 4 (and potentially 3) has a problem: The resending client doesn't know if the receiving client got the data or not.
