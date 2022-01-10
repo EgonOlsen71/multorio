@@ -65,7 +65,7 @@ Init phase 2 / Seed exchange
 
 To avoid to implement a kind of client/server relation between the clients and to keep each client as simple as possible,
 we do a kind of "key exchange" between the two. Each client calculates a random number in the range of 0-999 and sends it to
-the other client. If both numbers are equals, the clients will generate a new number each an repeat.
+the other client. If both numbers are equals, the clients will generate a new number each and repeat.
 Then, each client will create a seed based on its own number and the one retrieved from the other client by
 using this algorithm:
 
@@ -87,7 +87,7 @@ Add the larger number to that: 456000+678 = 456678
 => New seed = 63462
 
 The client with the smaller number will also be the first mover. The left player always moves first. Depending on who
-moves first, one client might name to switch player names around.
+moves first, one client might have to switch player names around.
 
 
 Dealing with connection/data loading problems
