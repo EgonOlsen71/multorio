@@ -18,7 +18,7 @@
 2030 return
 
 2050 rem init com settings
-2055 to%=64:bu=51200:ui=49152:lr%=-1:rd%=0
+2055 tt%=64:bu=51200:ui=49152:lr%=-1:rd%=0
 2060 ur=49155:us=49152+18:ug=49152+21
 2070 uc=49152+24:ug$="mul!":tw%=60:ad$=""
 2080 gi%=1:gv%=1:dim di%(64)
@@ -52,9 +52,9 @@
 2202 if rm%=1 then gosub 2600
 2203 ca$="":ig%=ad$<>""
 2204 gosub 2800
-2205 poke 171,to%:sys us,bu
+2205 poke 171,tt%:sys us,bu
 2210 if peek(171)=0 then 2245
-2220 poke 171,to%:sys ug,bu+200
+2220 poke 171,tt%:sys ug,bu+200
 2225 if peek(171)=0 then 2245
 2230 gosub 2650:if le% then 2240
 2235 rc%=peek(bu+206):er%=0:return
