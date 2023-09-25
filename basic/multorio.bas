@@ -234,7 +234,7 @@
 39030 if a$=chr$(13) and len(st$)>2 then print chr$(157);chr$(157);" ":return
 39040 if a$<>chr$(20) then 39080
 39050 if len(st$)>0 then st$=left$(st$, len(st$)-1):gosub 39880:goto 39015
-39080 if (a$<"0" or a$>"9") and (a$<"a" or a$>"z") and a$<>" " then 39020
+39080 if (a$<"0" or a$>"9") and (a$<"a" or a$>"z") and a$<>" " and a$<>"-" then 39020
 39090 if len(st$)>15 then gosub 39850:goto 39015
 39095 gosub 39880:st$=st$+a$:goto 39015
 
@@ -279,7 +279,7 @@
 39340 if nu%<n2% then nt%=nu%:nu%=n2%:n2%=nt%:me=0
 39345 gosub 3300
 39350 sd=1000*n2%+nu%:sd=sd-int(sd/65535)*65535
-39360 print "game seed is"+sd:sd=rnd(-sd)
+39360 print "game seed is";sd:sd=rnd(-sd)
 39365 print pn$(cp);" moves first..."
 39370 ct%=255:gosub 4000: rem "clear" taunt message...
 39380 print chr$(147);:return
